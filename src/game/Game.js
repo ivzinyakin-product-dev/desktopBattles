@@ -23,6 +23,7 @@
   let SoulAltar = (global.TZ && global.TZ.SoulAltar);
   let WaveManager = (global.TZ && global.TZ.WaveManager);
   let ScoreManager = (global.TZ && global.TZ.ScoreManager);
+  let BackgroundManager = (global.TZ && global.TZ.BackgroundManager);
 
   if (typeof require !== 'undefined') {
     Vector2 = Vector2 || require('../engine/Vector2').Vector2;
@@ -32,6 +33,9 @@
     ParticleSystem = ParticleSystem || require('../engine/ParticleSystem').ParticleSystem;
     SpriteGen = SpriteGen || require('../engine/SpriteGen').SpriteGen;
     AudioSynth = AudioSynth || require('../engine/AudioSynth').AudioSynth;
+    BackgroundManager = BackgroundManager || (function () {
+      try { return require('../engine/BackgroundManager').BackgroundManager; } catch (e) { return null; }
+    })();
     Katana = Katana || require('./Katana').Katana;
     Slicer = Slicer || require('./Slicer').Slicer;
     Enemy = Enemy || require('./Enemy').Enemy;
@@ -67,6 +71,7 @@
       });
       this.waves = new WaveManager();
       this.scores = new ScoreManager();
+      this.background = BackgroundManager ? new BackgroundManager(1280, 720) : null;
 
       // Entity storage
       this.enemies = [];
@@ -252,6 +257,9 @@
       this.altar.reset();
       this.waves.reset();
       this.scores.reset();
+      if (this.background && typeof this.background.reset === 'function') {
+        this.background.reset();
+      }
       this.katana.reset ? this.katana.reset() : (this.katana.projectiles = []);
       this.camera.trauma = 0;
     }
@@ -327,6 +335,9 @@
       this.altar.update(dt);
       this.scores.update(dt);
       this.particles.update(dt);
+      if (this.background && typeof this.background.update === 'function') {
+        this.background.update(dt);
+      }
 
       // 2. Wave manager update & Spawning
       this.waves.update(dt, this.enemies, (type) => this.spawnEnemy(type));
@@ -347,6 +358,9 @@
       if (this.waves.isWaveComplete(this.enemies)) {
         this.altar.restoreHealth(15);
         this.waves.nextWave();
+        if (this.background && typeof this.background.onWaveChange === 'function') {
+          this.background.onWaveChange(this.waves.currentWave);
+        }
         this.addFloatingText(640, 320, 'WAVE CLEAR! +15 HP RESTORED', '#00e5ff', 20);
       }
 
@@ -578,8 +592,12 @@
       if (!ctx) return;
 
       // Layer 1: Background & Arena
-      this.renderer.clear('#09090b');
-      this._drawArenaBackground(ctx);
+      if (this.background && typeof this.background.draw === 'function') {
+        this.background.draw(ctx);
+      } else {
+        this.renderer.clear('#09090b');
+        this._drawArenaBackground(ctx);
+      }
 
       // Layer 2: World entities wrapped in camera trauma shake
       this.camera.shake(ctx, () => {
@@ -631,6 +649,11 @@
 
       // Layer 3: HUD and UI overlays
       this._drawHUD(ctx);
+
+      // Layer 3.5: Cinematic Chapter Banner
+      if (this.background && typeof this.background.drawBanner === 'function') {
+        this.background.drawBanner(ctx);
+      }
     }
 
     /**
