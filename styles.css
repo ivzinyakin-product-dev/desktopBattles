@@ -1,0 +1,204 @@
+/* ==========================================================================
+   TENSA ZANGETSU: SOUL ALTAR DEFENSE
+   Retro Arcade / Bleach RotMG Aesthetics
+   ========================================================================== */
+
+:root {
+  --bg-color: #070709;
+  --panel-bg: #121217;
+  --border-color: #27272a;
+  --accent-red: #ff0033;
+  --accent-cyan: #00e5ff;
+  --accent-gold: #eab308;
+  --text-primary: #f4f4f5;
+  --text-muted: #a1a1aa;
+}
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-family: 'Courier New', Courier, monospace;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+/* Outer layout wrapper */
+#arcade-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  position: relative;
+}
+
+/* Header bar */
+#game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1280px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: bold;
+}
+
+.header-title .tag-bankai {
+  color: var(--accent-red);
+  text-shadow: 0 0 8px rgba(255, 0, 51, 0.7);
+  border: 1px solid var(--accent-red);
+  padding: 2px 6px;
+  font-size: 10px;
+  border-radius: 2px;
+  text-transform: uppercase;
+}
+
+.header-title .title-text {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.header-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-arcade {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  padding: 4px 10px;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-arcade:hover {
+  background: #27272a;
+  color: #ffffff;
+  border-color: #52525b;
+}
+
+.btn-arcade:active {
+  transform: translateY(1px);
+}
+
+/* Canvas Frame & Aspect Ratio Preservation */
+#canvas-frame {
+  position: relative;
+  width: 100%;
+  max-width: 1280px;
+  aspect-ratio: 16 / 9;
+  max-height: calc(100vh - 80px);
+  background: #09090b;
+  border: 2px solid var(--border-color);
+  box-shadow: 
+    0 0 30px rgba(255, 0, 51, 0.12),
+    0 0 10px rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Game Canvas with pixelated rendering and hidden mouse cursor */
+#gameCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-crisp-edges;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  cursor: none;
+}
+
+/* Subtle Retro CRT Scanline & Vignette Overlay */
+.crt-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.22) 50%
+  );
+  background-size: 100% 4px;
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.55);
+  opacity: 0.85;
+}
+
+/* Footer Controls Guide */
+#game-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 1280px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.key-badge {
+  background: #18181b;
+  border: 1px solid #3f3f46;
+  color: #f4f4f5;
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-weight: bold;
+  font-size: 10px;
+}
+
+.ctrl-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ctrl-item .accent {
+  color: var(--accent-red);
+}
+
+/* Responsive adjustments */
+@media (max-height: 600px) {
+  #game-header {
+    display: none;
+  }
+  #game-footer {
+    font-size: 10px;
+    margin-top: 4px;
+  }
+}

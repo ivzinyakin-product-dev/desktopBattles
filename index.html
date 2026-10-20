@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="Tensa Zangetsu: Soul Altar Defense - Retro RotMG-style desktop arcade slasher game">
+  <title>Tensa Zangetsu: Soul Altar Defense</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="arcade-container">
+    <!-- Header -->
+    <header id="game-header">
+      <div class="header-title">
+        <span class="tag-bankai">Bankai</span>
+        <span class="title-text">TENSA ZANGETSU : SOUL ALTAR DEFENSE</span>
+      </div>
+      <div class="header-controls">
+        <button id="btn-toggle-scanlines" class="btn-arcade" title="Toggle CRT scanline overlay">
+          <span>📺 CRT FX</span>
+        </button>
+        <button id="btn-toggle-fullscreen" class="btn-arcade" title="Toggle Fullscreen mode">
+          <span>⛶ FULLSCREEN</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Canvas Viewport Frame -->
+    <div id="canvas-frame">
+      <canvas id="gameCanvas" width="1280" height="720"></canvas>
+      <div id="crt-overlay" class="crt-overlay"></div>
+    </div>
+
+    <!-- Footer Controls Guide -->
+    <footer id="game-footer">
+      <div class="ctrl-item">
+        <span class="key-badge">MOUSE</span>
+        <span>Swing Katana</span>
+      </div>
+      <div class="ctrl-item">
+        <span class="key-badge">L-CLICK</span>
+        <span>Senka Slash <span class="accent">(Rapid Arc)</span></span>
+      </div>
+      <div class="ctrl-item">
+        <span class="key-badge">R-CLICK / SPACE</span>
+        <span>Kuroi Getsuga <span class="accent">(Crescent Wave)</span></span>
+      </div>
+      <div class="ctrl-item">
+        <span class="key-badge">F</span>
+        <span>Fullscreen</span>
+      </div>
+      <div class="ctrl-item">
+        <span class="key-badge">P / ESC</span>
+        <span>Pause</span>
+      </div>
+      <div class="ctrl-item">
+        <span class="key-badge">R</span>
+        <span>Restart</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Engine Scripts (Topological Dependency Order) -->
+  <script src="src/engine/Vector2.js"></script>
+  <script src="src/engine/Camera.js"></script>
+  <script src="src/engine/CanvasRenderer.js"></script>
+  <script src="src/engine/GameLoop.js"></script>
+  <script src="src/engine/ParticleSystem.js"></script>
+  <script src="src/engine/SpriteGen.js"></script>
+  <script src="src/engine/AudioSynth.js"></script>
+
+  <!-- Game Domain Scripts -->
+  <script src="src/game/Projectile.js"></script>
+  <script src="src/game/Katana.js"></script>
+  <script src="src/game/Slicer.js"></script>
+  <script src="src/game/Enemy.js"></script>
+  <script src="src/game/SoulAltar.js"></script>
+  <script src="src/game/WaveManager.js"></script>
+  <script src="src/game/ScoreManager.js"></script>
+  <script src="src/game/Game.js"></script>
+
+  <!-- Application Bootstrap -->
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const canvas = document.getElementById('gameCanvas');
+      const crtOverlay = document.getElementById('crt-overlay');
+      const btnScanlines = document.getElementById('btn-toggle-scanlines');
+      const btnFullscreen = document.getElementById('btn-toggle-fullscreen');
+
+      // Initialize Sprite Matrix Cache
+      if (window.TZ && window.TZ.SpriteGen && typeof window.TZ.SpriteGen.initAll === 'function') {
+        window.TZ.SpriteGen.initAll();
+      }
+
+      // Instantiate Master Game Coordinator
+      const game = new window.TZ.Game(canvas);
+      window.__gameInstance = game;
+
+      // Start 120Hz Loop
+      game.start();
+
+      // UI Controls: Toggle CRT scanlines
+      if (btnScanlines && crtOverlay) {
+        btnScanlines.addEventListener('click', () => {
+          const isHidden = crtOverlay.style.display === 'none';
+          crtOverlay.style.display = isHidden ? 'block' : 'none';
+          btnScanlines.style.opacity = isHidden ? '1' : '0.6';
+        });
+      }
+
+      // UI Controls: Toggle Fullscreen
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+          }
+        }
+      }
+
+      if (btnFullscreen) {
+        btnFullscreen.addEventListener('click', toggleFullscreen);
+      }
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'f' || e.key === 'F') {
+          toggleFullscreen();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
