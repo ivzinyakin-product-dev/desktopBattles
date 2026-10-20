@@ -1,151 +1,109 @@
 # ⚔️ Tensa Zangetsu: Soul Altar Defense
 
-[![Tests Passing](https://img.shields.io/badge/Tests-311%2F311%20Passed-brightgreen.svg)](test/test-e2e.js)
-[![Zero Dependencies](https://img.shields.io/badge/Dependencies-0%20(Vanilla%20JS)-blue.svg)](package.json)
-[![Platform](https://img.shields.io/badge/Platform-Web%20%2F%20Desktop-orange.svg)](run.bat)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Art Style](https://img.shields.io/badge/Art-RotMG%20Pixel%20Style-purple.svg)](src/engine/SpriteGen.js)
+[![Tests Passing](https://img.shields.io/badge/Тесты-311%2F311%20Пройдено-brightgreen.svg)](test/test-e2e.js)
+[![Zero Dependencies](https://img.shields.io/badge/Зависимости-0%20(Чистый%20JS)-blue.svg)](package.json)
+[![Platform](https://img.shields.io/badge/Платформа-Windows%20%7C%20Mac%20%7C%20Linux-orange.svg)](run.bat)
+[![License](https://img.shields.io/badge/Лицензия-MIT-yellow.svg)](LICENSE)
+[![Art Style](https://img.shields.io/badge/Графика-RotMG%20Пиксель--арт-purple.svg)](src/engine/SpriteGen.js)
 
-> **Tensa Zangetsu: Soul Altar Defense** is a high-octane desktop web arcade slasher combining **Realm of the Mad God (RotMG)** retro pixel-art with **Bleach** anime lore. 
+> **Tensa Zangetsu: Soul Altar Defense** — это динамичный аркадный слэшер в ретро-стиле *Realm of the Mad God* по мотивам аниме *Bleach*. 
 > 
-> Direct the pitch-black Bankai blade (**Tensa Zangetsu**) using high-speed mouse sweeps to slice incoming armies of Hollows along clean 2D cut planes, deflect devastating Cero beams, and defend the central **Soul Altar** across escalating waves of spiritual warfare.
+> Здесь нет сложного управления кнопками перемещения: **вы управляете легендарным мечом Тенса Зангецу прямо курсором мыши!** Разгоняйте мышь, совершайте быстрые взмахи, разрубайте наступающие армии Пустых на две половинки и защищайте светящийся Алтарь Душ в центре экрана.
 
 ---
 
-## 🎮 Key Gameplay Mechanics
+## 🚀 Как запустить игру (в 1 клик)
 
-### 1. Dynamic Mouse Blade Kinematics & Verlet Physics
-* **Direct Blade Tracking**: The katana hilt follows the cursor via exponential smoothing ($\lambda = 50\text{ s}^{-1}$), dynamically transitioning between a radial resting stance and a forward-raked cutting stance (+0.35 rad) during fast mouse sweeps.
-* **Getsuga Tensho Trail**: 16-sample ribbon trail using dual-composite blending (glowing screen-blended crimson aura + 4px jet-black core).
-* **Verlet Chain Tassel**: 8-node physical chain attached to the pommel with distance relaxation constraints, swaying naturally upon violent mouse whips.
-* **Senka Arc Slash [Left-Click]**: Forced 240° circular sweep over 150ms with ease-out cubic velocity, high damage multiplier, and screen shake.
-* **Kuroi Getsuga Wave [Right-Click / Spacebar]**: Ranged crescent projectile (820 px/s) piercing up to 8 enemies in a line.
+Игра работает прямо в браузере, не требует установки дополнительных программ и не скачивает тяжёлых файлов.
 
-### 2. Analytical 2D Sprite Bisection (Slicer Engine)
-* **True Polygon Splitting**: Slashed Hollows are mathematically bisected along the exact cut plane perpendicular to blade motion.
-* **Debris Physics**: Severed halves receive lateral separation impulses and angular tumbling velocities (5–9 rad/s), dissolving into spiritual Reiatsu particles over 0.85s.
-* **Continuous Collision Detection (CCD)**: Custom `SweptQuad` volume collision prevents tunneling even under $10,000\text{ px/s}$ mouse whips.
+### 🪟 На Windows:
+Просто дважды кликните по файлу **`run.bat`** в папке с игрой. Игра откроется в вашем браузере.
 
-### 3. Hollow Swarm Ecosystem & Menos Grande Boss
-* 🕷️ **Hollow Crawlers**: Fast swarm infantry using flocking separation (Boids algorithm) rushing the Altar (1-hit kill).
-* 🦇 **Hollow Flyers**: Agile scouts executing inward logarithmic spirals with reactive blade evasion and high-speed dives (270 px/s).
-* 🛡️ **Armored Brutes**: Heavy vanguards. Weak swings ($< 600\text{ px/s}$) ricochet with metallic clashing sparks; heavy slashes ($\ge 600\text{ px/s}$) crack the carapace.
-* 👹 **Menos Grande Gillian Boss**: Giant 32x32 colossus. Halts at 280px standoff, charges a destructive Cero beam (2.5s telegraph), and unleashes a massive laser (35 damage).
-* ⚡ **Cero Blade Deflection**: Time a high-speed slash ($\ge 450\text{ px/s}$) across the Cero beam to slice and deflect the laser, stunning the Menos Grande!
+### 🍏 На Mac:
+* **Вариант без терминала**: дважды кликните по файлу **`index.html`** (откроется в Safari или Chrome).
+* **Через терминал**: откройте терминал в папке с игрой и выполните команду `bash run.sh`.
 
-### 4. Soul Altar Defense & Wave Progression
-* **100 HP Core**: Center monument with 4 visual health phases (`INTACT` $\to$ `DAMAGED` $\to$ `CRITICAL` $\to$ `DESTROYED`).
-* **Friendly-Fire Immunity**: The player's blade never damages the Altar.
-* **Wave Recovery**: Clearing all enemies in a wave restores +15 HP to the Altar.
-* **Bleach Rank Ladder**: Combo multiplier scaling from $1.0\times$ to $6.0\times$ with titles:
-  $$\text{Shikai} \longrightarrow \text{Bankai} \longrightarrow \text{Getsuga} \longrightarrow \text{Kuroi Getsuga} \longrightarrow \text{Hollowfied} \longrightarrow \text{Mugetsu}$$
-
-### 5. 100% Procedural Assets (Zero External Files)
-* **RotMG Pixel Art**: 11 procedural 16x16 / 32x32 sprite matrices with automated 4-way 1px dark borders cached on offscreen canvases.
-* **Procedural Web Audio Synthesizer**: Custom retro sound generator using oscillators, biquad filters, and noise buffers (blade slashes, steel clashing, Hollow death crunches, Cero drone & beam, Altar hits, Game Over despair arpeggio).
+### 🌐 В любом браузере:
+Просто откройте файл **`index.html`** двойным щелчком мыши.
 
 ---
 
-## 🕹️ Controls
+## 🕹️ Управление
 
-| Input | Action | Details |
+| Клавиша / Кнопка | Действие | Описание |
 | :--- | :--- | :--- |
-| **Mouse Motion** | **Swing Blade** | Move mouse faster than 280 px/s to slice enemies |
-| **Left Click (LMB)** | **Senka Slash** | Instant 240° circular arc slash (0.35s cooldown) |
-| **Right Click (RMB) / Space** | **Kuroi Getsuga** | Ranged piercing crescent wave (1.8s cooldown) |
-| **[F]** | **Fullscreen** | Toggle borderless fullscreen display |
-| **[P] / [Esc]** | **Pause** | Pause or resume battle |
-| **[R]** | **Restart** | Instant replay / reset during battle or game over |
+| **Движение мыши** | **Взмах мечом** | Чем быстрее вы двигаете мышь, тем сильнее удар! При быстром взмахе клинок рубит врагов на пути. |
+| **Левая кнопка мыши (ЛКМ)** | **Удар «Сэнка»** | Мгновенный круговой взмах вокруг курсора на 240° (перезарядка 0.35 сек). |
+| **Правая кнопка (ПКМ) / Пробел** | **Курои Гецуга** | Выстрел черным полумесяцем духовной энергии, пробивающим линию врагов (перезарядка 1.8 сек). |
+| **[F]** | **На весь экран** | Включить или выключить полноэкранный режим. |
+| **[P] / [Esc]** | **Пауза** | Поставить бой на паузу или снять с неё. |
+| **[R]** | **Рестарт** | Быстро начать заново (во время боя или после поражения). |
+
+> 💡 **Совет для владельцев ноутбуков и Mac**: нажимать **`[Пробел]`** для запуска волны Гецуги гораздо удобнее, чем кликать по трекпаду двумя пальцами на бегу!
 
 ---
 
-## 🚀 Quick Start
+## ⚔️ Главные фишки игры
 
-### Option A: Windows 1-Click Launch (Recommended)
-Simply double-click the included batch launcher:
-```cmd
-run.bat
-```
-*If Node.js is installed, it starts the local server and opens your browser. If Node.js is not present, it launches `index.html` directly.*
+### 1. Меч слушается вашей руки
+* **Никаких задержек**: клинок моментально следует за движениями мыши, меняя угол наклона при атаке.
+* **Шлейф Гецуги**: при быстром взмахе за клинком тянется яркий шлейф с черным ядром и малиновым ореолом реацу.
+* **Живая цепь на рукояти**: цепочка на эфесе меча реалистично изгибается и колышется от ваших движений.
 
-### Option B: Node.js Local Server
-Run with native Node.js (no npm packages required):
+### 2. Честное разрубание врагов
+* Враги не просто исчезают — **клинок разрезает их ровно по той линии, под которой прошёл удар!**
+* Обе половинки разрубленного монстра с ускорением отлетают в стороны, кружатся и растворяются в воздухе, оставляя духовные искры.
+
+### 3. Отражение лазера Серо
+* Когда на поле появляется гигантский босс **Менос Гранде**, он начинает заряжать мощный красный луч — **Серо**.
+* **Секретная техника**: если разогнать меч и на полной скорости рассечь луч прямо во время выстрела, вы **отразите Серо**, оглушите босса и спасёте Алтарь!
+
+### 4. Оборона Алтаря Душ (100 HP)
+* В центре арены стоит Алтарь Душ со 100 единицами здоровья.
+* Ваш меч безопасен для Алтаря (случайно повредить его нельзя).
+* Если враг добегает до центра, купол Алтаря трещит и теряет прочность (голубой $\to$ желтый $\to$ красный).
+* **За победу в каждой волне** Алтарь восстанавливает **+15 HP**!
+
+### 5. Комбо и ранги Bleach
+Чем быстрее вы рубите врагов подряд, тем выше множитель очков (от $1.0\times$ до $6.0\times$) и ваш духовный ранг:
+$$\text{Шикай} \longrightarrow \text{Банкай} \longrightarrow \text{Гецуга} \longrightarrow \text{Курои Гецуга} \longrightarrow \text{Пустификация} \longrightarrow \text{Мугетсу}$$
+
+---
+
+## 👾 Бестиарий: кто наступает на Алтарь
+
+1. 🕷️ **Ползуны (Crawlers)** — слабые мелкие пустые. Бегут стаями по прямой. Разрубаются с одного взмаха.
+2. 🦇 **Летуны (Flyers)** — быстрые крылатые бестии. Кружит по спирали, умеют уворачиваться от кончика меча и резко пикируют к центру.
+3. 🛡️ **Бронированные громилы (Brutes)** — тяжеловесы с крепким костяным панцирем. Если махнуть мечом слишком медленно, он со звоном отскочит от брони! Рубите со всей скорости или бейте волной Гецуги.
+4. 👹 **Менос Гранде (Boss)** — гигантский колосс в маске. Останавливается на краю арены, гудит нарастающим звуком заряда и стреляет толстым лучом Серо через всё поле.
+
+---
+
+## 🎨 100% процедурный звук и ретро-стиль
+
+* **Звуки без файлов**: все звуки (свист клинка, звон стали, хруст масок, гул лазера и музыка проигрыша) синтезируются вашим браузером в реальном времени через *Web Audio API*.
+* **Пиксель-арт**: все спрайты рисуются кодом с классической жирной 1-пиксельной тёмной окантовкой в традициях *Realm of the Mad God*.
+* **Эффект старого телевизора**: кнопка `📺 CRT FX` в шапке включает и выключает стильные ретро-сканлайны и виньетку.
+
+---
+
+## 🧪 Для разработчиков (тесты и запуск)
+
+Игра написана на чистом JavaScript (ES6) без фреймворков и npm-библиотек.
+
+Запуск локального сервера через Node.js:
 ```bash
 npm start
-# or
-node server.js
+# сервер запустится на http://localhost:8080/
 ```
-Then visit **`http://localhost:8080/`** in any modern web browser.
 
-### Option C: Direct Browser Opening
-Simply double-click `index.html` to open it in your browser of choice.
-
----
-
-## 🧪 Testing & Verification
-
-The project features a 4-tier opaque-box test suite running on Node.js's native test runner (`node:test`).
-
-Run all test suites (311 tests):
+Запуск автоматических тестов (все **311 тестов**):
 ```bash
 npm test
 ```
-Or run individual suites:
-```bash
-npm run test:engine   # Vector2, CCD, GameLoop, CanvasRenderer, Camera, Particles, SpriteGen
-npm run test:combat   # Katana kinematics, Getsuga trails, Verlet tassel, Slicer, Enemy AI
-npm run test:e2e      # 4-tier end-to-end integration and adversarial stress suite
-```
-
-```text
-▶ Feature 1-28: Complete Architecture Coverage
-ℹ tests 311
-ℹ suites 58
-ℹ pass 311
-ℹ fail 0
-ℹ duration_ms 170ms
-```
 
 ---
 
-## 📁 Repository Structure
+## 📜 Лицензия
 
-```text
-desktopBattles/
-├── index.html              # HTML5 Canvas viewport, HUD layout, and bootstrapper
-├── styles.css              # Retro arcade styling, CRT scanline shader overlay
-├── server.js               # Zero-dependency local static HTTP server (MIME, security)
-├── run.bat                 # Windows 1-click dual-mode launcher
-├── package.json            # Scripts & project metadata (zero dependencies)
-├── LICENSE                 # MIT License
-├── README.md               # Game manual and architectural documentation
-├── src/
-│   ├── engine/
-│   │   ├── Vector2.js          # 2D math & Continuous Collision Detection (SweptQuad)
-│   │   ├── Camera.js           # Trauma-squared (T^2) camera screen shake engine
-│   │   ├── CanvasRenderer.js   # 1280x720 virtual viewport & pixelation pipeline
-│   │   ├── GameLoop.js         # 120Hz fixed-timestep physics accumulator
-│   │   ├── ParticleSystem.js   # Zero-allocation pool for Reiatsu embers & smoke
-│   │   ├── SpriteGen.js        # Procedural RotMG 16x16 / 32x32 sprite matrices
-│   │   └── AudioSynth.js       # Procedural Web Audio API sound synthesizer
-│   └── game/
-│       ├── Katana.js           # Blade kinematics, Getsuga trail, Verlet tassel
-│       ├── Projectile.js       # Kuroi Getsuga crescent wave projectiles
-│       ├── Slicer.js           # Analytical 2D sprite polygon bisection & debris
-│       ├── Enemy.js            # Crawlers, Flyers, Armored Brutes, Menos Grande Boss
-│       ├── SoulAltar.js        # Soul Altar entity (100 HP, 4 states, wave heals)
-│       ├── WaveManager.js      # Wave scaling formula N(w) & milestone boss logic
-│       ├── ScoreManager.js     # Score multiplier ladder (D->SSS) & Bleach ranks
-│       └── Game.js             # Master coordinator, floating text, and HUD
-└── test/
-    ├── test-engine.js      # Engine unit tests (54 tests)
-    ├── test-combat.js      # Combat & slicing unit tests (86 tests)
-    └── test-e2e.js         # 4-tier comprehensive integration test suite (171 tests)
-```
-
----
-
-## 📜 License
-
-This project is licensed under the [MIT License](LICENSE).
-Feel free to fork, modify, and build upon it!
+Проект распространяется под свободной лицензией [MIT](LICENSE). Играйте, модифицируйте и делитесь рекордами!
