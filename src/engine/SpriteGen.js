@@ -531,6 +531,389 @@
         '................................',
         '................................'
       ]
+    },
+
+    // 12. Shinigami Swordsman - Gotei 13 Regular (16x16)
+    shinigami_swordsman: {
+      size: 16,
+      palette: {
+        '.': null,
+        'k': '#09090b',
+        'w': '#ffffff',
+        's': '#fde047',
+        'h': '#18181b',
+        'b': '#cbd5e1',
+        'g': '#38bdf8'
+      },
+      rows: [
+        '.....hhhhh......',
+        '....hhhhhhh.....',
+        '....hhssshh.....',
+        '....hhssshh.bb..',
+        '....wwwwwww.bb..',
+        '...kkkkwkkkk.b..',
+        '...kkkkwkkkk.b..',
+        '...kkkkkkkkk.b..',
+        '...kkkkkkkkk.g..',
+        '....kkkkkkk..g..',
+        '....kk...kk.....',
+        '...kkk...kkk....',
+        '...kkk...kkk....',
+        '...www...www....',
+        '................',
+        '................'
+      ]
+    },
+
+    // 13. Shinigami Swordsman - Walk Frame (16x16)
+    shinigami_swordsman_walk: {
+      size: 16,
+      palette: {
+        '.': null,
+        'k': '#09090b',
+        'w': '#ffffff',
+        's': '#fde047',
+        'h': '#18181b',
+        'b': '#cbd5e1',
+        'g': '#38bdf8'
+      },
+      rows: [
+        '.....hhhhh......',
+        '....hhhhhhh.....',
+        '....hhssshh.....',
+        '....hhssshh.bb..',
+        '....wwwwwww.bb..',
+        '...kkkkwkkkk.b..',
+        '...kkkkwkkkk.b..',
+        '...kkkkkkkkk.b..',
+        '...kkkkkkkkk.g..',
+        '....kkkkkkk..g..',
+        '....kkk..k......',
+        '...kkkk...kk....',
+        '..www.....kkk...',
+        '..........www...',
+        '................',
+        '................'
+      ]
+    },
+
+    // 14. Shinigami Kido Caster - Kidō Corps Mage (16x16)
+    shinigami_kido: {
+      size: 16,
+      palette: {
+        '.': null,
+        't': '#0d9488',
+        'c': '#14b8a6',
+        'w': '#ffffff',
+        'm': '#581c87',
+        'f': '#ef4444',
+        'p': '#f43f5e'
+      },
+      rows: [
+        '.....wwwww......',
+        '....wwwwwww.....',
+        '....wwttwww.....',
+        '....wwttwww.....',
+        '....ccccccc.....',
+        '...ttctmcttt....',
+        '..fttctmctttf...',
+        '.pfttcmmcttfp...',
+        '..ftttttttttf...',
+        '...ttttttttt....',
+        '....ttt.ttt.....',
+        '....ttt.ttt.....',
+        '...cccc.cccc....',
+        '...wwww.wwww....',
+        '................',
+        '................'
+      ]
+    },
+
+    // 15. Shinigami Officer - Gotei 13 Lieutenant / Veteran (32x32)
+    shinigami_officer: {
+      size: 32,
+      palette: {
+        '.': null,
+        'k': '#09090b',
+        'w': '#ffffff',
+        'd': '#e2e8f0',
+        's': '#fed7aa',
+        'h': '#18181b',
+        'b': '#cbd5e1',
+        'g': '#eab308',
+        'r': '#b91c1c'
+      },
+      rows: [
+        '................................',
+        '...........hhhhhhh..............',
+        '..........hhhhhhhhh.............',
+        '.........hhhssssshhh............',
+        '.........hhhssssshhh............',
+        '.........hhhssssshhh.....bb.....',
+        '.........wwwwwwwwwww.....bb.....',
+        '........wwwwdwwwdwwww....bb.....',
+        '.......wwwwwdwwwdwwwww...bb.....',
+        '......wwwwwddwwwddwwwww..bb.....',
+        '......wwwwddkkkddwwwww...bb.....',
+        '.....wwwwwddkrkddwwwww...bb.....',
+        '.....wwwwwddkrkddwwwww...bb.....',
+        '.....wwwwdddkkkdddwwww...bb.....',
+        '.....wwwwdddgggdddwwww...bb.....',
+        '.....wwwwdddgggdddwwww...gg.....',
+        '......wwwwdddwdddwwww....gg.....',
+        '......wwwwdddwdddwwww....rr.....',
+        '.......wwwdddwdddwww.....rr.....',
+        '........kkkddwddkkk.............',
+        '........kkkddwddkkk.............',
+        '........kkk..w..kkk.............',
+        '........kkk..w..kkk.............',
+        '........kkk.....kkk.............',
+        '........kkk.....kkk.............',
+        '.......kkkk.....kkkk............',
+        '.......wwww.....wwww............',
+        '................................',
+        '................................',
+        '................................',
+        '................................',
+        '................................'
+      ]
+    },
+
+    // 16. Arrancar Numeros - Infantry (16x16)
+    arrancar_numeros: {
+      size: 16,
+      palette: {
+        '.': null,
+        'w': '#ffffff',
+        'k': '#09090b',
+        's': '#e2e8f0',
+        'm': '#f8fafc',
+        'e': '#10b981',
+        'b': '#94a3b8'
+      },
+      rows: [
+        '.....mmmmm......',
+        '....mmmmmmm.....',
+        '....mmeesmm.....',
+        '....mssssmm.....',
+        '....kkkkkkk.bb..',
+        '...wwwkwkwww.b..',
+        '...wwwkwkwww.b..',
+        '...wwwwwwwww.b..',
+        '...wwwwwwwww.b..',
+        '....wwwwwww.....',
+        '....ww...ww.....',
+        '...www...www....',
+        '...www...www....',
+        '...kkk...kkk....',
+        '................',
+        '................'
+      ]
+    },
+
+    // 17. Arrancar Numeros - Walk Frame (16x16)
+    arrancar_numeros_walk: {
+      size: 16,
+      palette: {
+        '.': null,
+        'w': '#ffffff',
+        'k': '#09090b',
+        's': '#e2e8f0',
+        'm': '#f8fafc',
+        'e': '#10b981',
+        'b': '#94a3b8'
+      },
+      rows: [
+        '.....mmmmm......',
+        '....mmmmmmm.....',
+        '....mmeesmm.....',
+        '....mssssmm.....',
+        '....kkkkkkk.bb..',
+        '...wwwkwkwww.b..',
+        '...wwwkwkwww.b..',
+        '...wwwwwwwww.b..',
+        '...wwwwwwwww.b..',
+        '....wwwwwww.....',
+        '....www..w......',
+        '...wwww...ww....',
+        '..kkk.....www...',
+        '..........kkk...',
+        '................',
+        '................'
+      ]
+    },
+
+    // 18. Arrancar Flyer - Wings Up (16x16)
+    arrancar_flyer_0: {
+      size: 16,
+      palette: {
+        '.': null,
+        'w': '#ffffff',
+        'g': '#10b981',
+        'd': '#047857',
+        's': '#cbd5e1',
+        'e': '#fbbf24',
+        'k': '#09090b'
+      },
+      rows: [
+        'd..............d',
+        'gd............dg',
+        'ggd..........dgg',
+        '.ggd...ww...dgg.',
+        '..gd..wwww..dg..',
+        '...d.wwkkw..d...',
+        '.....wweew......',
+        '.....wssssw.....',
+        '......wwww......',
+        '.......ss.......',
+        '.......kk.......',
+        '.......kk.......',
+        '........k.......',
+        '................',
+        '................',
+        '................'
+      ]
+    },
+
+    // 19. Arrancar Flyer - Wings Down (16x16)
+    arrancar_flyer_1: {
+      size: 16,
+      palette: {
+        '.': null,
+        'w': '#ffffff',
+        'g': '#10b981',
+        'd': '#047857',
+        's': '#cbd5e1',
+        'e': '#fbbf24',
+        'k': '#09090b'
+      },
+      rows: [
+        '................',
+        '................',
+        '.......ww.......',
+        '......wwww......',
+        '.....wwkkw......',
+        'ggd...wweew..dgg',
+        'dgg...wssssw.ggd',
+        '.dg....wwww...gd',
+        '..d.....ss....d.',
+        '.......kk.......',
+        '.......kk.......',
+        '........k.......',
+        '................',
+        '................',
+        '................',
+        '................'
+      ]
+    },
+
+    // 20. Arrancar Brute - Exequias Vanguard / Hierro (32x32)
+    arrancar_brute: {
+      size: 32,
+      palette: {
+        '.': null,
+        'w': '#ffffff',
+        'k': '#09090b',
+        'm': '#f8fafc',
+        's': '#cbd5e1',
+        'e': '#10b981',
+        'b': '#1e293b',
+        'r': '#059669'
+      },
+      rows: [
+        '................................',
+        '..mm........................mm..',
+        '..mmm......................mmm..',
+        '...mmm....................mmm...',
+        '....mmm..................mmm....',
+        '.....mmm...mmmmmmmmmm...mmm.....',
+        '......mm..mmmmmmmmmmmm..mm......',
+        '.......m.mmmeemmmmeemm.m........',
+        '........mmmeemmmmeemmmm.........',
+        '........mmmmmmmmmmmmmmm.........',
+        '..bbbb...mmmmkkkkkkmmmm...bbbb..',
+        '.bwwwbb...mmmmmmmmmmmm...bbwwwb.',
+        '.bwwwwb....mmmmmmmmmm....bwwwwb.',
+        '.bwwwwbb....bbwwwwbb....bbwwwwb.',
+        '.bbwwwbb...bbwwwwwwbb...bbwwwbb.',
+        '..bbbbb....bwwrrwwb.....bbbbb...',
+        '...........bwwrrrrwwb...........',
+        '...........bwwrrrrwwb...........',
+        '............bwwrrwwb............',
+        '...........bbwwwwwwbb...........',
+        '............bbbbbbbb............',
+        '..........wwww....wwww..........',
+        '.........wwwww....wwwww.........',
+        '.........wwww......wwww.........',
+        '.........wwww......wwww.........',
+        '........wwwww......wwwww........',
+        '........wwww........wwww........',
+        '........bbbb........bbbb........',
+        '................................',
+        '................................',
+        '................................',
+        '................................'
+      ]
+    },
+
+    // 21. Kidō Orb Projectile - Hadō #31: Shakkahō (16x16)
+    kido_shakkaho: {
+      size: 16,
+      palette: {
+        '.': null,
+        'f': '#ef4444',
+        'y': '#f59e0b',
+        'w': '#ffffff',
+        'r': '#991b1b'
+      },
+      rows: [
+        '......ff........',
+        '....ffffyy......',
+        '...ffyyyyyyf....',
+        '..ffyywwwwyyf...',
+        '..fyywwwwwwyf...',
+        '.fyywwwwwwwwyf..',
+        '.fyywwwwwwwwyf..',
+        '..fyywwwwwwyf...',
+        '..ffyywwwwyyf...',
+        '...ffyyyyyyf....',
+        '....ffffyyff....',
+        '......ffff......',
+        '.......rr.......',
+        '................',
+        '................',
+        '................'
+      ]
+    },
+
+    // 22. Arrancar Bala Projectile (16x16)
+    arrancar_bala: {
+      size: 16,
+      palette: {
+        '.': null,
+        'g': '#10b981',
+        'e': '#34d399',
+        'w': '#ffffff',
+        'd': '#065f46'
+      },
+      rows: [
+        '......gg........',
+        '....ggggee......',
+        '...ggeeeeeeg....',
+        '..ggeewwwweeg...',
+        '..geewwwwwweeg..',
+        '.geewwwwwwwweeg.',
+        '.geewwwwwwwweeg.',
+        '..geewwwwwweeg..',
+        '..ggeewwwweeg...',
+        '...ggeeeeeeg....',
+        '....ggggeegg....',
+        '......gggg......',
+        '.......dd.......',
+        '................',
+        '................',
+        '................'
+      ]
     }
   };
 
@@ -577,6 +960,8 @@
       let resolvedName = name;
       if (name === 'altar') resolvedName = 'altar_intact';
       if (name === 'flyer') resolvedName = 'flyer_0';
+      if (name === 'arrancar_flyer') resolvedName = 'arrancar_flyer_0';
+      if (name === 'arrancar_flyer') resolvedName = 'arrancar_flyer_0';
       return SPRITE_DEFS[resolvedName] || null;
     }
 
@@ -609,6 +994,7 @@
       if (!def && typeof spriteOrName === 'string') {
         if (spriteOrName === 'altar') def = SPRITE_DEFS.altar_intact;
         if (spriteOrName === 'flyer') def = SPRITE_DEFS.flyer_0;
+        if (spriteOrName === 'arrancar_flyer') def = SPRITE_DEFS.arrancar_flyer_0;
       }
       if (!def) throw new Error(`SpriteGen: unknown sprite '${spriteOrName}'`);
 
@@ -687,6 +1073,7 @@
       let resolvedName = name;
       if (name === 'altar') resolvedName = 'altar_intact';
       if (name === 'flyer') resolvedName = 'flyer_0';
+      if (name === 'arrancar_flyer') resolvedName = 'arrancar_flyer_0';
 
       const cacheKey = `${resolvedName}_${scale}`;
       if (defaultCache.has(cacheKey)) {
@@ -737,6 +1124,9 @@
       }
       if (cache.has('flyer_0')) {
         cache.set('flyer', cache.get('flyer_0'));
+      }
+      if (cache.has('arrancar_flyer_0')) {
+        cache.set('arrancar_flyer', cache.get('arrancar_flyer_0'));
       }
 
       return cache;

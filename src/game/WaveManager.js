@@ -20,56 +20,88 @@
 
     /**
      * Mathematical formula for total enemy count in wave:
-     * N(w) = floor(10 + 6w + 1.2 * w^1.3)
+     * Fast-paced 10-wave campaign (15 - 38 enemies).
      * Clamped safely for negative or zero wave indices.
      * @param {number} [wave]
      * @returns {number}
      */
     calculateEnemyCount(wave) {
       const w = Math.max(1, typeof wave === 'number' ? wave : this.currentWave);
-      if (w === 1) return 17;
-      if (w === 2) return 24;
-      if (w === 5) return 50;
-      return Math.floor(10 + 6 * w + 1.2 * Math.pow(w, 1.3));
+      if (w === 1) return 15;
+      if (w === 2) return 18;
+      if (w === 3) return 22;
+      if (w === 4) return 24;
+      if (w === 5) return 27;
+      if (w === 6) return 29;
+      if (w === 7) return 31;
+      if (w === 8) return 33;
+      if (w === 9) return 35;
+      if (w === 10) return 38;
+      return Math.floor(12 + 2.4 * w + 0.35 * Math.pow(w, 1.3));
     }
 
     /**
      * Spawn interval formula:
-     * T(w) = max(0.25, 1.8 * 0.88^(w - 1))
+     * Fast spawn cadence for a brisk 5-7 minute complete campaign.
      * @param {number} [wave]
      * @returns {number} Interval in seconds
      */
     getSpawnInterval(wave) {
       const w = Math.max(1, typeof wave === 'number' ? wave : this.currentWave);
-      return Math.max(0.25, 1.8 * Math.pow(0.88, w - 1));
+      return Math.max(0.35, 1.4 * Math.pow(0.90, w - 1));
     }
 
     /**
      * Concurrent alive enemy cap formula:
-     * Cap(w) = min(60, 12 + 4w)
+     * Cap(w) = min(45, 10 + 3w)
      * @param {number} [wave]
      * @returns {number} Max alive enemies allowed simultaneously
      */
     getAliveCap(wave) {
       const w = Math.max(1, typeof wave === 'number' ? wave : this.currentWave);
-      return Math.min(60, 12 + 4 * w);
+      return Math.min(45, 10 + 3 * w);
     }
 
     /**
-     * Whether specified wave is a milestone boss encounter (Wave 5, 8, 10, 15, 20...)
+     * Whether specified wave is a milestone boss encounter (Wave 3 and Wave 10)
      * @param {number} [wave]
      * @returns {boolean}
      */
     isBossWave(wave) {
       const w = Math.max(1, typeof wave === 'number' ? wave : this.currentWave);
-      return w === 5 || w === 8 || w === 10 || (w > 10 && w % 5 === 0);
+      return w === 3 || w === 10 || (w > 10 && w % 5 === 0);
     }
 
     /**
-     * Selects enemy archetype based on current wave progression.
+     * Checks if current wave is the climax final wave of the campaign.
+     * @param {number} [wave]
+     * @returns {boolean}
+     */
+    isFinalWave(wave) {
+      const w = Math.max(1, typeof wave === 'number' ? wave : this.currentWave);
+      return w === 10;
+    }
+
+    /**
+     * Determines faction based on chronological Bleach story arc:
+     * - Waves 1-3 (Karakura & Rukongai): 'hollow'
+     * - Waves 4-5 (Seireitei & Sokyoku): 'shinigami'
+     * - Waves 6-10 (Hueco Mundo, Las Noches, Fake Karakura): 'arrancar'
+     * @param {number} [wave]
+     * @returns {'hollow'|'shinigami'|'arrancar'}
+     */
+    getFactionForWave(wave) {
+      const w = Math.max(1, typeof wave === 'number' ? wave : this.currentWave);
+      if (w <= 3) return 'hollow';
+      if (w <= 5) return 'shinigami';
+      return 'arrancar';
+    }
+
+    /**
+     * Selects enemy archetype based on current wave progression and story faction.
      * Wave 1 is strictly 100% Crawlers.
      * @param {number} [wave]
-     * @returns {'crawler'|'flyer'|'brute'|'menos'}
+     * @returns {string}
      */
     pickEnemyType(wave) {
       const w = Math.max(1, typeof wave === 'number' ? wave : this.currentWave);
@@ -84,16 +116,38 @@
         return 'menos';
       }
 
+      const faction = this.getFactionForWave(w);
       const roll = Math.random();
+
+      if (faction === 'shinigami') {
+        if (w === 4) {
+          return roll < 0.65 ? 'shinigami_swordsman' : 'shinigami_kido';
+        } else {
+          // Wave 5: Sōkyoku Hill duel
+          if (roll < 0.40) return 'shinigami_swordsman';
+          if (roll < 0.70) return 'shinigami_kido';
+          return 'shinigami_officer';
+        }
+      }
+
+      if (faction === 'arrancar') {
+        if (w === 6) {
+          return roll < 0.60 ? 'arrancar_numeros' : 'arrancar_flyer';
+        } else {
+          // Waves 7-10: Las Noches & Fake Karakura
+          if (roll < 0.45) return 'arrancar_numeros';
+          if (roll < 0.75) return 'arrancar_flyer';
+          return 'arrancar_brute';
+        }
+      }
+
+      // Default: Hollow Faction (Waves 1-3)
       if (w === 2) {
         return roll < 0.70 ? 'crawler' : 'flyer';
-      } else if (w === 3 || w === 4) {
-        if (roll < 0.55) return 'crawler';
-        if (roll < 0.85) return 'flyer';
-        return 'brute';
       } else {
-        if (roll < 0.40) return 'crawler';
-        if (roll < 0.75) return 'flyer';
+        // Wave 3: Hollow Brutes accompany Menos Grande breach
+        if (roll < 0.50) return 'crawler';
+        if (roll < 0.80) return 'flyer';
         return 'brute';
       }
     }
@@ -162,6 +216,7 @@
   global.TZ.WaveManager = WaveManager;
 
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { WaveManager };
+    module.exports = WaveManager;
+    module.exports.WaveManager = WaveManager;
   }
 })(typeof window !== 'undefined' ? window : global);

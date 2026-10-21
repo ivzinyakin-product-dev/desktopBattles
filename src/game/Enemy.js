@@ -24,7 +24,13 @@
     CRAWLER: 'crawler',
     FLYER: 'flyer',
     BRUTE: 'brute',
-    MENOS: 'menos'
+    MENOS: 'menos',
+    SHINIGAMI_SWORDSMAN: 'shinigami_swordsman',
+    SHINIGAMI_KIDO: 'shinigami_kido',
+    SHINIGAMI_OFFICER: 'shinigami_officer',
+    ARRANCAR_NUMEROS: 'arrancar_numeros',
+    ARRANCAR_FLYER: 'arrancar_flyer',
+    ARRANCAR_BRUTE: 'arrancar_brute'
   };
 
   const ENEMY_CONFIGS = {
@@ -36,7 +42,8 @@
       scoreValue: 100,
       spriteKey: 'crawler',
       walkSpriteKey: 'crawler_walk',
-      spriteSize: 16
+      spriteSize: 28, // Enlarged from 16 to 28 for vibrant 2x RotMG visibility
+      faction: 'hollow'
     },
     flyer: {
       hp: 20,
@@ -48,7 +55,8 @@
       scoreValue: 150,
       spriteKey: 'flyer_0',
       flapSpriteKey: 'flyer_1',
-      spriteSize: 16
+      spriteSize: 28, // Enlarged from 16 to 28
+      faction: 'hollow'
     },
     brute: {
       hp: 90,
@@ -59,7 +67,8 @@
       ricochetSpeedThreshold: 600,
       chipDamage: 15,
       spriteKey: 'brute',
-      spriteSize: 32
+      spriteSize: 52, // Enlarged from 32 to 52 for heavy presence
+      faction: 'hollow'
     },
     menos: {
       hp: 550,
@@ -71,7 +80,77 @@
       ceroDuration: 1.2,
       scoreValue: 1500,
       spriteKey: 'menos',
-      spriteSize: 32
+      spriteSize: 32,
+      faction: 'hollow'
+    },
+    shinigami_swordsman: {
+      hp: 35,
+      speed: 120,
+      radius: 14,
+      altarDamage: 10,
+      scoreValue: 150,
+      spriteKey: 'shinigami_swordsman',
+      walkSpriteKey: 'shinigami_swordsman_walk',
+      spriteSize: 30,
+      faction: 'shinigami'
+    },
+    shinigami_kido: {
+      hp: 22,
+      speed: 75,
+      radius: 13,
+      altarDamage: 12,
+      scoreValue: 200,
+      spriteKey: 'shinigami_kido',
+      spriteSize: 28,
+      faction: 'shinigami'
+    },
+    shinigami_officer: {
+      hp: 120,
+      speed: 50,
+      radius: 25,
+      altarDamage: 22,
+      scoreValue: 400,
+      ricochetSpeedThreshold: 650,
+      chipDamage: 15,
+      spriteKey: 'shinigami_officer',
+      spriteSize: 52,
+      faction: 'shinigami'
+    },
+    arrancar_numeros: {
+      hp: 45,
+      speed: 135,
+      radius: 14,
+      altarDamage: 12,
+      scoreValue: 200,
+      spriteKey: 'arrancar_numeros',
+      walkSpriteKey: 'arrancar_numeros_walk',
+      spriteSize: 30,
+      faction: 'arrancar'
+    },
+    arrancar_flyer: {
+      hp: 30,
+      speed: 195,
+      diveSpeed: 290,
+      diveThreshold: 180,
+      radius: 13,
+      altarDamage: 14,
+      scoreValue: 250,
+      spriteKey: 'arrancar_flyer_0',
+      flapSpriteKey: 'arrancar_flyer_1',
+      spriteSize: 28,
+      faction: 'arrancar'
+    },
+    arrancar_brute: {
+      hp: 160,
+      speed: 52,
+      radius: 26,
+      altarDamage: 25,
+      scoreValue: 500,
+      ricochetSpeedThreshold: 700,
+      chipDamage: 12,
+      spriteKey: 'arrancar_brute',
+      spriteSize: 54,
+      faction: 'arrancar'
     }
   };
 
@@ -126,6 +205,8 @@
       this.audioSynth = options.audioSynth || options.audio || (global.TZ && global.TZ.defaultAudioSynth) || null;
       this.camera = options.camera || null;
 
+      this.faction = cfg.faction || 'hollow';
+
       // Type-Specific Initializations
       if (this.type === ENEMY_TYPES.CRAWLER) {
         // Feature 15: Sinusoidal skittering noise
@@ -152,6 +233,42 @@
         this.armorBroken = false;
         this.ricochetSpeedThreshold = cfg.ricochetSpeedThreshold || 600;
         this.chipDamage = cfg.chipDamage || 15;
+      } else if (this.type === ENEMY_TYPES.SHINIGAMI_SWORDSMAN) {
+        // Shinigami Swordsman: Shunpo step bursts
+        this.walkSpriteKey = cfg.walkSpriteKey;
+        this.shunpoCooldownTimer = 1.8 + Math.random() * 0.8;
+        this.shunpoDashTimer = 0;
+      } else if (this.type === ENEMY_TYPES.SHINIGAMI_KIDO) {
+        // Shinigami Kidō Caster: Standoff Hadō #31 casting
+        this.kidoTimer = 1.2 + Math.random() * 0.6;
+        this.kidoRange = 220;
+        this.isCasting = false;
+      } else if (this.type === ENEMY_TYPES.SHINIGAMI_OFFICER) {
+        // Shinigami Officer: Zanpakuto parry vanguard
+        this.armorBroken = false;
+        this.ricochetSpeedThreshold = cfg.ricochetSpeedThreshold || 650;
+        this.chipDamage = cfg.chipDamage || 15;
+      } else if (this.type === ENEMY_TYPES.ARRANCAR_NUMEROS) {
+        // Arrancar Numeros: Sonido reactive flash evasion
+        this.walkSpriteKey = cfg.walkSpriteKey;
+        this.sonidoCooldownTimer = 1.0;
+      } else if (this.type === ENEMY_TYPES.ARRANCAR_FLYER) {
+        // Arrancar Flyer: Aerial spiral approach with Bala projectile
+        this.diveSpeed = cfg.diveSpeed || 290;
+        this.diveThreshold = cfg.diveThreshold || 180;
+        this.state = 'SPIRAL';
+        this.mode = 'SPIRAL';
+        this.orbitDir = (typeof options.orbitDir === 'number') ? options.orbitDir : (Math.random() < 0.5 ? 1 : -1);
+        this.isEvading = false;
+        this.evadeTimer = 0;
+        this.evadeCooldown = 0;
+        this.flapSpriteKey = cfg.flapSpriteKey;
+        this.balaTimer = 2.0 + Math.random() * 1.5;
+      } else if (this.type === ENEMY_TYPES.ARRANCAR_BRUTE) {
+        // Arrancar Brute: Exequias Hierro Vanguard
+        this.armorBroken = false;
+        this.ricochetSpeedThreshold = cfg.ricochetSpeedThreshold || 700;
+        this.chipDamage = cfg.chipDamage || 12;
       }
     }
 
@@ -170,6 +287,34 @@
 
     static createMenos(x, y, options) {
       return new MenosGrande(x, y, options);
+    }
+
+    static createShinigamiSwordsman(x, y, options) {
+      return new Enemy(ENEMY_TYPES.SHINIGAMI_SWORDSMAN, x, y, options);
+    }
+
+    static createShinigamiKido(x, y, options) {
+      return new Enemy(ENEMY_TYPES.SHINIGAMI_KIDO, x, y, options);
+    }
+
+    static createShinigamiOfficer(x, y, options) {
+      return new Enemy(ENEMY_TYPES.SHINIGAMI_OFFICER, x, y, options);
+    }
+
+    static createArrancarNumeros(x, y, options) {
+      return new Enemy(ENEMY_TYPES.ARRANCAR_NUMEROS, x, y, options);
+    }
+
+    static createArrancarFlyer(x, y, options) {
+      return new Enemy(ENEMY_TYPES.ARRANCAR_FLYER, x, y, options);
+    }
+
+    static createArrancarBrute(x, y, options) {
+      return new Enemy(ENEMY_TYPES.ARRANCAR_BRUTE, x, y, options);
+    }
+
+    static createProjectile(x, y, targetX, targetY, type, options) {
+      return new EnemyProjectile(x, y, targetX, targetY, type, options);
     }
 
     static get TYPES() {
@@ -260,6 +405,41 @@
     }
 
     /**
+     * Arrancar Sonido Flash Step Evasion.
+     * @param {{x: number, y: number}} bladeTip
+     * @param {number} [bladeSpeed=0]
+     * @returns {boolean}
+     */
+    evadeSonido(bladeTip, bladeSpeed = 0) {
+      if (!bladeTip || typeof bladeTip.x !== 'number' || typeof bladeTip.y !== 'number') {
+        return false;
+      }
+      if (this.sonidoCooldownTimer > 0) return false;
+
+      const threatRadius = 85;
+      const dx = this.x - bladeTip.x;
+      const dy = this.y - bladeTip.y;
+      const distSq = dx * dx + dy * dy;
+
+      if (distSq < threatRadius * threatRadius) {
+        this.sonidoCooldownTimer = 2.0;
+        const dist = Math.sqrt(distSq) || 1.0;
+        const awayX = dx / dist;
+        const awayY = dy / dist;
+
+        const latSign = (Math.random() < 0.5 ? 1 : -1);
+        this.x += (-awayY * latSign) * 45;
+        this.y += (awayX * latSign) * 45;
+
+        if (this.particleSystem && typeof this.particleSystem.spawnEmbers === 'function') {
+          this.particleSystem.spawnEmbers(this.x, this.y, 8, 0, '#10b981');
+        }
+        return true;
+      }
+      return false;
+    }
+
+    /**
      * Feature 17 & Combat: Slash hit resolution.
      * Handles carapace ricochet, armor breaking, and bisection.
      * @param {number} [damage=25] 
@@ -274,34 +454,42 @@
         return { ricochet: false, cracked: false, bisect: false, damage: 0, hp: 0 };
       }
 
-      // 1. Armored Brute Vanguard Specific Armor Mechanics (Feature 17)
-      if (this.type === ENEMY_TYPES.BRUTE) {
+      // 1. Armored Vanguard Mechanics (Brute, Shinigami Officer, Arrancar Brute)
+      const isArmored = (this.type === ENEMY_TYPES.BRUTE || 
+                         this.type === ENEMY_TYPES.SHINIGAMI_OFFICER || 
+                         this.type === ENEMY_TYPES.ARRANCAR_BRUTE);
+
+      if (isArmored) {
         if (!this.armorBroken) {
-          // Ricochet Check: Swing speed strictly below 600 px/s ricochets (armor intact)
+          // Ricochet Check: Swing speed strictly below threshold ricochets (armor intact)
           if (swingSpeed < this.ricochetSpeedThreshold && !options.isGetsugaWave && !options.isForcedSlash) {
-            this.hp -= this.chipDamage;
+            const dealtChip = this.chipDamage || 15;
+            this.hp -= dealtChip;
             this.hitFlashTimer = 0.08;
 
             if (this.audioSynth && typeof this.audioSynth.playClash === 'function') {
               this.audioSynth.playClash();
             }
             if (this.particleSystem && typeof this.particleSystem.spawnEmbers === 'function') {
-              this.particleSystem.spawnEmbers(this.x, this.y, 8, cutAngle, '#ffffff');
+              const sparkColor = (this.type === ENEMY_TYPES.ARRANCAR_BRUTE) ? '#10b981' : '#ffffff';
+              this.particleSystem.spawnEmbers(this.x, this.y, 8, cutAngle, sparkColor);
             }
 
             return {
               ricochet: true,
               cracked: false,
               bisect: false,
-              damage: this.chipDamage,
+              damage: dealtChip,
+              chipDamage: dealtChip,
               armorBroken: false,
               hp: this.hp
             };
           } else {
-            // Heavy Hit (>= 600 px/s or Getsuga Wave or Senka forced slash): Cracks carapace!
+            // Heavy Hit (>= threshold or Getsuga Wave or Senka forced slash): Cracks carapace / breaks guard!
             this.armorBroken = true;
             this.stunTimer = 1.2; // 1.2s stagger stun
-            this.hp -= damage;
+            const finalDamage = (this.type === ENEMY_TYPES.ARRANCAR_BRUTE) ? Math.round(damage * 0.8) : damage;
+            this.hp -= finalDamage;
             this.hitFlashTimer = 0.15;
 
             if (this.audioSynth && typeof this.audioSynth.playClash === 'function') {
@@ -318,7 +506,7 @@
                 ricochet: false,
                 cracked: true,
                 bisect: true,
-                damage: damage,
+                damage: finalDamage,
                 armorBroken: true,
                 hp: this.hp
               };
@@ -328,7 +516,7 @@
               ricochet: false,
               cracked: true,
               bisect: false,
-              damage: damage,
+              damage: finalDamage,
               armorBroken: true,
               hp: this.hp
             };
@@ -355,13 +543,14 @@
         }
       }
 
-      // 2. Standard Swarm Types (Crawler & Flyer): 1-Hit Clean Cut / Bisection
+      // 2. Standard Swarm Types (Crawler, Flyer, Shinigami Swordsman, Kido Caster, Arrancar Numeros, Arrancar Flyer): 1-Hit Clean Cut / Bisection
       this.hp -= damage;
       this.isDead = true;
       this.hitFlashTimer = 0.10;
 
       if (this.particleSystem && typeof this.particleSystem.spawnEmbers === 'function') {
-        this.particleSystem.spawnEmbers(this.x, this.y, 10, cutAngle, '#ff0033');
+        const emberColor = (this.faction === 'arrancar') ? '#10b981' : ((this.faction === 'shinigami') ? '#38bdf8' : '#ff0033');
+        this.particleSystem.spawnEmbers(this.x, this.y, 10, cutAngle, emberColor);
         this.particleSystem.spawnShards(this.x, this.y, 4);
       }
 
@@ -395,6 +584,9 @@
       if (this.evadeCooldown > 0) {
         this.evadeCooldown = Math.max(0, this.evadeCooldown - dt);
       }
+      if (this.sonidoCooldownTimer > 0) {
+        this.sonidoCooldownTimer = Math.max(0, this.sonidoCooldownTimer - dt);
+      }
       if (this.evadeTimer > 0) {
         this.evadeTimer = Math.max(0, this.evadeTimer - dt);
         if (this.evadeTimer === 0) {
@@ -411,9 +603,16 @@
       }
 
       // Check reactive evasion for flyers against approaching katana blade
-      if (this.type === ENEMY_TYPES.FLYER && katana && katana.tip && katana.speed >= 250) {
+      if ((this.type === ENEMY_TYPES.FLYER || this.type === ENEMY_TYPES.ARRANCAR_FLYER) && katana && katana.tip && katana.speed >= 250) {
         this.evadeBlade(katana.tip, katana.speed);
       }
+
+      // Check reactive Sonido evasion for Arrancar Numeros
+      if (this.type === ENEMY_TYPES.ARRANCAR_NUMEROS && katana && katana.tip && katana.speed >= 250) {
+        this.evadeSonido(katana.tip, katana.speed);
+      }
+
+      let spawnEvent = null;
 
       // Execute Archetype AI Steering
       switch (this.type) {
@@ -437,7 +636,8 @@
           break;
         }
 
-        case ENEMY_TYPES.FLYER: {
+        case ENEMY_TYPES.FLYER:
+        case ENEMY_TYPES.ARRANCAR_FLYER: {
           // Feature 16: Logarithmic spiral & high-speed dive
           const dx = this.x - ax;
           const dy = this.y - ay;
@@ -455,6 +655,25 @@
 
             this.vx = (toAx / toDist) * this.diveSpeed;
             this.vy = (toAy / toDist) * this.diveSpeed;
+
+            // Arrancar Flyer Bala attack during dive
+            if (this.type === ENEMY_TYPES.ARRANCAR_FLYER) {
+              if (typeof this.balaTimer === 'number') {
+                this.balaTimer -= dt;
+                if (this.balaTimer <= 0) {
+                  this.balaTimer = 3.0 + Math.random();
+                  spawnEvent = {
+                    spawnProjectile: {
+                      type: 'bala',
+                      x: this.x,
+                      y: this.y,
+                      targetX: ax,
+                      targetY: ay
+                    }
+                  };
+                }
+              }
+            }
           } else if (!this.isEvading) {
             // Logarithmic spiral approach
             this.state = 'SPIRAL';
@@ -471,8 +690,83 @@
           break;
         }
 
-        case ENEMY_TYPES.BRUTE: {
-          // Feature 17: Relentless direct march toward Altar
+        case ENEMY_TYPES.BRUTE:
+        case ENEMY_TYPES.SHINIGAMI_OFFICER:
+        case ENEMY_TYPES.ARRANCAR_BRUTE: {
+          // Relentless direct march toward Altar
+          const dx = ax - this.x;
+          const dy = ay - this.y;
+          const dist = Math.hypot(dx, dy) || 1.0;
+
+          this.vx = (dx / dist) * this.speed;
+          this.vy = (dy / dist) * this.speed;
+          break;
+        }
+
+        case ENEMY_TYPES.SHINIGAMI_SWORDSMAN: {
+          // Shinigami Swordsman: Direct march with Shunpo bursts
+          if (typeof this.shunpoCooldownTimer === 'number') {
+            this.shunpoCooldownTimer -= dt;
+            if (this.shunpoCooldownTimer <= 0) {
+              this.shunpoCooldownTimer = 2.0 + Math.random() * 0.8;
+              this.shunpoDashTimer = 0.18;
+              if (this.particleSystem && typeof this.particleSystem.spawnSmoke === 'function') {
+                this.particleSystem.spawnSmoke(this.x, this.y, 4);
+              }
+            }
+          }
+
+          let curSpeed = this.speed;
+          if (this.shunpoDashTimer > 0) {
+            this.shunpoDashTimer -= dt;
+            curSpeed = 320;
+          }
+
+          const dx = ax - this.x;
+          const dy = ay - this.y;
+          const dist = Math.hypot(dx, dy) || 1.0;
+
+          this.vx = (dx / dist) * curSpeed;
+          this.vy = (dy / dist) * curSpeed;
+          break;
+        }
+
+        case ENEMY_TYPES.SHINIGAMI_KIDO: {
+          // Shinigami Kidō Caster: Stops at standoff distance and casts Hadō #31 Shakkahō
+          const dx = ax - this.x;
+          const dy = ay - this.y;
+          const dist = Math.hypot(dx, dy) || 1.0;
+
+          if (dist <= this.kidoRange) {
+            this.vx = 0;
+            this.vy = 0;
+            if (typeof this.kidoTimer === 'number') {
+              this.kidoTimer -= dt;
+              if (this.kidoTimer <= 0) {
+                this.kidoTimer = 2.6 + Math.random() * 0.6;
+                spawnEvent = {
+                  spawnProjectile: {
+                    type: 'shakkaho',
+                    x: this.x,
+                    y: this.y,
+                    targetX: ax,
+                    targetY: ay
+                  }
+                };
+                if (this.particleSystem && typeof this.particleSystem.spawnEmbers === 'function') {
+                  this.particleSystem.spawnEmbers(this.x, this.y, 6, Math.atan2(dy, dx), '#ef4444');
+                }
+              }
+            }
+          } else {
+            this.vx = (dx / dist) * this.speed;
+            this.vy = (dy / dist) * this.speed;
+          }
+          break;
+        }
+
+        case ENEMY_TYPES.ARRANCAR_NUMEROS: {
+          // Arrancar Numeros: Fast direct sprint toward Altar
           const dx = ax - this.x;
           const dy = ay - this.y;
           const dist = Math.hypot(dx, dy) || 1.0;
@@ -512,6 +806,10 @@
           damage: this.altarDamage,
           enemy: this
         };
+      }
+
+      if (spawnEvent) {
+        return spawnEvent;
       }
 
       return null;
@@ -558,17 +856,26 @@
       // Facing angle (Sprites point downward by default; rotate relative to movement)
       ctx.rotate(this.angle - Math.PI / 2);
 
-      // White flash tint when damaged
+      // Reiatsu aura glow & hit flash
       if (this.hitFlashTimer > 0) {
         ctx.shadowColor = '#ffffff';
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = 12;
+      } else if (this.faction === 'shinigami') {
+        ctx.shadowColor = '#38bdf8';
+        ctx.shadowBlur = 5;
+      } else if (this.faction === 'arrancar') {
+        ctx.shadowColor = '#10b981';
+        ctx.shadowBlur = 5;
+      } else {
+        ctx.shadowColor = '#a855f7';
+        ctx.shadowBlur = 4;
       }
 
       // Resolve Sprite Canvas from SpriteGen
       let currentKey = this.spriteKey;
-      if (this.type === ENEMY_TYPES.CRAWLER && this.animFrame === 1 && this.walkSpriteKey) {
+      if (this.animFrame === 1 && this.walkSpriteKey) {
         currentKey = this.walkSpriteKey;
-      } else if (this.type === ENEMY_TYPES.FLYER && this.animFrame === 1 && this.flapSpriteKey) {
+      } else if (this.animFrame === 1 && this.flapSpriteKey) {
         currentKey = this.flapSpriteKey;
       }
 
@@ -602,9 +909,12 @@
         ctx.stroke();
       }
 
-      // Visual indicator for cracked carapace on Armored Brute
-      if (this.type === ENEMY_TYPES.BRUTE && this.armorBroken) {
-        ctx.strokeStyle = '#ff0033';
+      // Visual indicator for cracked carapace / guard broken
+      const isArmoredType = (this.type === ENEMY_TYPES.BRUTE || 
+                             this.type === ENEMY_TYPES.SHINIGAMI_OFFICER || 
+                             this.type === ENEMY_TYPES.ARRANCAR_BRUTE);
+      if (isArmoredType && this.armorBroken) {
+        ctx.strokeStyle = (this.type === ENEMY_TYPES.ARRANCAR_BRUTE) ? '#10b981' : ((this.type === ENEMY_TYPES.SHINIGAMI_OFFICER) ? '#38bdf8' : '#ff0033');
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(-6, -8);
@@ -1257,10 +1567,120 @@
     }
   }
 
+  /**
+   * EnemyProjectile: Hadō #31 Shakkahō & Arrancar Bala projectiles.
+   */
+  class EnemyProjectile {
+    constructor(x, y, targetX, targetY, type = 'shakkaho', options = {}) {
+      this.x = Number.isFinite(x) ? x : 0;
+      this.y = Number.isFinite(y) ? y : 0;
+      this.type = type; // 'shakkaho' or 'bala'
+      this.radius = (type === 'shakkaho') ? 12 : 9;
+      this.damage = (type === 'shakkaho') ? 14 : 8;
+      this.speed = (type === 'shakkaho') ? 190 : 360;
+      this.scoreValue = 50;
+      this.isDead = false;
+
+      const tx = Number.isFinite(targetX) ? targetX : 640;
+      const ty = Number.isFinite(targetY) ? targetY : 360;
+      const dx = tx - this.x;
+      const dy = ty - this.y;
+      const dist = Math.hypot(dx, dy) || 1.0;
+
+      this.vx = (dx / dist) * this.speed;
+      this.vy = (dy / dist) * this.speed;
+      this.angle = Math.atan2(this.vy, this.vx);
+
+      this.spriteKey = (type === 'shakkaho') ? 'kido_shakkaho' : 'arrancar_bala';
+      this.trailTimer = 0;
+      this.particleSystem = options.particleSystem || (global.TZ && global.TZ.defaultParticleSystem) || null;
+    }
+
+    update(dt, altar) {
+      if (this.isDead) return null;
+      this.x += this.vx * dt;
+      this.y += this.vy * dt;
+
+      // Particles trail
+      this.trailTimer += dt;
+      if (this.trailTimer >= 0.05) {
+        this.trailTimer = 0;
+        if (this.particleSystem && typeof this.particleSystem.spawnEmbers === 'function') {
+          const color = (this.type === 'shakkaho') ? '#ef4444' : '#10b981';
+          this.particleSystem.spawnEmbers(this.x, this.y, 2, this.angle + Math.PI, color);
+        }
+      }
+
+      // Check Altar impact
+      if (altar) {
+        const ax = altar.x || 640;
+        const ay = altar.y || 360;
+        const ar = altar.radius || 36;
+        const dist = Math.hypot(this.x - ax, this.y - ay);
+        if (dist <= (this.radius + ar)) {
+          this.isDead = true;
+          if (this.particleSystem && typeof this.particleSystem.spawnSmoke === 'function') {
+            this.particleSystem.spawnSmoke(this.x, this.y, 6);
+          }
+          return {
+            hitAltar: true,
+            damage: this.damage,
+            projectile: this
+          };
+        }
+      }
+
+      // Out of bounds cleanup (virtual canvas 1280x720)
+      if (this.x < -100 || this.x > 1380 || this.y < -100 || this.y > 820) {
+        this.isDead = true;
+      }
+
+      return null;
+    }
+
+    draw(ctx) {
+      if (this.isDead || !ctx) return;
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.angle);
+
+      // Glow
+      ctx.shadowColor = (this.type === 'shakkaho') ? '#ff0033' : '#10b981';
+      ctx.shadowBlur = 10;
+
+      let sprite = null;
+      if (SpriteGen && typeof SpriteGen.getSprite === 'function') {
+        try {
+          sprite = SpriteGen.getSprite(this.spriteKey);
+        } catch (e) {
+          sprite = null;
+        }
+      }
+
+      if (sprite && typeof ctx.drawImage === 'function') {
+        const size = this.radius * 2.2;
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(sprite, -size / 2, -size / 2, size, size);
+      } else {
+        ctx.beginPath();
+        if (typeof ctx.arc === 'function') {
+          ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+        } else if (typeof ctx.rect === 'function') {
+          ctx.rect(-this.radius, -this.radius, this.radius * 2, this.radius * 2);
+        }
+        ctx.fillStyle = (this.type === 'shakkaho') ? '#ef4444' : '#10b981';
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+  }
+
   // Universal Modular Export Pattern
   global.TZ = global.TZ || {};
   global.TZ.Enemy = Enemy;
   global.TZ.MenosGrande = MenosGrande;
+  global.TZ.EnemyProjectile = EnemyProjectile;
   global.TZ.ENEMY_TYPES = ENEMY_TYPES;
   global.TZ.ENEMY_CONFIGS = ENEMY_CONFIGS;
 
@@ -1268,6 +1688,7 @@
     module.exports = Enemy;
     module.exports.Enemy = Enemy;
     module.exports.MenosGrande = MenosGrande;
+    module.exports.EnemyProjectile = EnemyProjectile;
     module.exports.ENEMY_TYPES = ENEMY_TYPES;
     module.exports.ENEMY_CONFIGS = ENEMY_CONFIGS;
   }

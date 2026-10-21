@@ -1,15 +1,16 @@
 {
   "name": "tensa-zangetsu-soul-altar-defense",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Desktop web arcade slasher game styled after Realm of the Mad God pixel art and Bleach anime lore. Slice incoming Hollow swarms with mouse blade kinematics and defend the Soul Altar.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test test/test-engine.js test/test-combat.js test/test-e2e.js test/test-backgrounds.js",
+    "test": "node --test test/test-engine.js test/test-combat.js test/test-e2e.js test/test-backgrounds.js test/test-factions.js",
     "test:engine": "node --test test/test-engine.js",
     "test:combat": "node --test test/test-combat.js",
     "test:e2e": "node --test test/test-e2e.js",
-    "test:backgrounds": "node --test test/test-backgrounds.js"
+    "test:backgrounds": "node --test test/test-backgrounds.js",
+    "test:factions": "node --test test/test-factions.js"
   },
   "keywords": [
     "game",

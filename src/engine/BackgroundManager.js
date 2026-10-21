@@ -156,18 +156,25 @@
     }
 
     /**
-     * Maps wave index to Bleach narrative story location.
+     * Maps wave index to Bleach narrative story location across the 10-wave campaign:
+     * - Wave 1: Karakura Town (Substitute Shinigami Arc)
+     * - Waves 2-3: Rukongai Outskirts (Infiltration & Menos Gate Breach)
+     * - Wave 4: Seireitei Infiltration (Gotei 13 Fortress)
+     * - Wave 5: Sōkyoku Hill (Execution Grounds Duel)
+     * - Wave 6: Hueco Mundo (White Sand Dunes)
+     * - Wave 7: Las Noches Palace (Espada Colonnades)
+     * - Waves 8+: Fake Karakura Town (Endgame War & Climax)
      * @param {number} wave
      * @returns {string} Location key
      */
     getLocationForWave(wave) {
       const w = Math.max(1, typeof wave === 'number' ? Math.floor(wave) : 1);
-      if (w <= 3) return 'karakura';
-      if (w <= 6) return 'rukongai';
-      if (w <= 9) return 'seireitei';
-      if (w <= 12) return 'sokyoku';
-      if (w <= 15) return 'huecomundo';
-      if (w <= 19) return 'lasnoches';
+      if (w <= 1) return 'karakura';
+      if (w <= 3) return 'rukongai';
+      if (w === 4) return 'seireitei';
+      if (w === 5) return 'sokyoku';
+      if (w === 6) return 'huecomundo';
+      if (w === 7) return 'lasnoches';
       return 'fakekarakura';
     }
 

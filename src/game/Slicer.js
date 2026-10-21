@@ -373,10 +373,11 @@
       const dPerp = dx * nx + dy * ny;
 
       // Resolve enemy sprite (from enemy property, options, or SpriteGen cache)
+      let spriteKey = options.spriteKey || enemy.spriteKey || type;
       let sprite = options.sprite || enemy.sprite || null;
-      if (!sprite && SpriteGen && typeof SpriteGen.getSprite === 'function' && type) {
+      if (!sprite && SpriteGen && typeof SpriteGen.getSprite === 'function' && spriteKey) {
         try {
-          sprite = SpriteGen.getSprite(type);
+          sprite = SpriteGen.getSprite(spriteKey);
         } catch (e) {
           sprite = null;
         }

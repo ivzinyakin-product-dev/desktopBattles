@@ -341,6 +341,34 @@
         });
       } catch (e) {}
     }
+
+    /**
+     * Victory fanfare ascending arpeggio.
+     */
+    playVictory() {
+      if (this.isMuted || !this.ctx || !this.masterGain) return;
+      try {
+        const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50]; // C Major ascending triumph
+        const now = this.ctx.currentTime || 0;
+
+        notes.forEach((freq, idx) => {
+          const t = now + idx * 0.12;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = idx === notes.length - 1 ? 'sine' : 'triangle';
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.35, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + (idx === notes.length - 1 ? 0.8 : 0.28));
+
+          osc.connect(gain);
+          gain.connect(this.masterGain);
+
+          osc.start(t);
+          osc.stop(t + (idx === notes.length - 1 ? 0.85 : 0.3));
+        });
+      } catch (e) {}
+    }
   }
 
   // Universal Module Export

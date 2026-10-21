@@ -1193,39 +1193,40 @@ describe('[TIER 1] Feature Coverage', () => {
     });
   });
 
-  describe('Feature 21: Continuous Wave Progression', () => {
-    it('21.1 Enemy count scales mathematically: N(w) = floor(10 + 6w + 1.2w^1.3)', (t) => {
+  describe('Feature 21: Continuous Wave Progression (Fast 10-Wave Campaign)', () => {
+    it('21.1 Enemy count scales mathematically for fast 10-wave pacing (15-38 enemies)', (t) => {
       const WaveManager = getModule('WaveManager', 'src/game/WaveManager.js');
       if (!WaveManager) { t.skip('WaveManager not implemented yet'); return; }
       const wm = new WaveManager();
       if (typeof wm.calculateEnemyCount === 'function') {
-        assert.strictEqual(wm.calculateEnemyCount(1), 17);
-        assert.strictEqual(wm.calculateEnemyCount(2), 24);
-        assert.strictEqual(wm.calculateEnemyCount(5), 50);
+        assert.strictEqual(wm.calculateEnemyCount(1), 15);
+        assert.strictEqual(wm.calculateEnemyCount(2), 18);
+        assert.strictEqual(wm.calculateEnemyCount(5), 27);
+        assert.strictEqual(wm.calculateEnemyCount(10), 38);
       } else {
         assert.ok(true);
       }
     });
 
-    it('21.2 Spawn interval decreases with wave: T(w) = max(0.25, 1.8 * 0.88^(w-1))', (t) => {
+    it('21.2 Spawn interval decreases with wave: T(w) = max(0.35, 1.4 * 0.90^(w-1))', (t) => {
       const WaveManager = getModule('WaveManager', 'src/game/WaveManager.js');
       if (!WaveManager) { t.skip('WaveManager not implemented yet'); return; }
       const wm = new WaveManager();
       if (typeof wm.getSpawnInterval === 'function') {
-        assert.ok(Math.abs(wm.getSpawnInterval(1) - 1.8) < 0.05);
+        assert.ok(Math.abs(wm.getSpawnInterval(1) - 1.4) < 0.05);
         assert.ok(wm.getSpawnInterval(10) < 1.0);
       } else {
         assert.ok(true);
       }
     });
 
-    it('21.3 Enforces concurrent alive enemy cap: Cap(w) = min(60, 12 + 4w)', (t) => {
+    it('21.3 Enforces concurrent alive enemy cap: Cap(w) = min(45, 10 + 3w)', (t) => {
       const WaveManager = getModule('WaveManager', 'src/game/WaveManager.js');
       if (!WaveManager) { t.skip('WaveManager not implemented yet'); return; }
       const wm = new WaveManager();
       if (typeof wm.getAliveCap === 'function') {
-        assert.strictEqual(wm.getAliveCap(1), 16);
-        assert.strictEqual(wm.getAliveCap(20), 60);
+        assert.strictEqual(wm.getAliveCap(1), 13);
+        assert.strictEqual(wm.getAliveCap(20), 45);
       } else {
         assert.ok(true);
       }
@@ -1242,16 +1243,20 @@ describe('[TIER 1] Feature Coverage', () => {
       }
     });
 
-    it('21.5 Spawns Menos Grande boss at milestone waves (Wave 5, Wave 8, Wave 10)', (t) => {
+    it('21.5 Spawns Menos Grande boss at milestone waves (Wave 3 and Wave 10 finale)', (t) => {
       const WaveManager = getModule('WaveManager', 'src/game/WaveManager.js');
       if (!WaveManager) { t.skip('WaveManager not implemented yet'); return; }
       const wm = new WaveManager();
       if (typeof wm.isBossWave === 'function') {
         assert.strictEqual(wm.isBossWave(1), false);
-        assert.strictEqual(wm.isBossWave(5), true);
-        assert.strictEqual(wm.isBossWave(8), true);
+        assert.strictEqual(wm.isBossWave(3), true);
+        assert.strictEqual(wm.isBossWave(10), true);
       } else {
         assert.ok(true);
+      }
+      if (typeof wm.isFinalWave === 'function') {
+        assert.strictEqual(wm.isFinalWave(10), true);
+        assert.strictEqual(wm.isFinalWave(9), false);
       }
     });
   });
@@ -1743,35 +1748,35 @@ describe('[TIER 2] Boundary & Corner Cases', () => {
   });
 
   describe('Wave Progression Boundaries', () => {
-    it('2.5.1 Wave 1 boundary conditions: strictly 17 crawlers, 0 flyers, 0 brutes, 0 menos', (t) => {
+    it('2.5.1 Wave 1 boundary conditions: strictly 15 crawlers, 0 flyers, 0 brutes, 0 menos', (t) => {
       const WaveManager = getModule('WaveManager', 'src/game/WaveManager.js');
       if (!WaveManager) { t.skip('WaveManager not implemented yet'); return; }
       const wm = new WaveManager();
       if (typeof wm.calculateEnemyCount === 'function') {
-        assert.strictEqual(wm.calculateEnemyCount(1), 17);
+        assert.strictEqual(wm.calculateEnemyCount(1), 15);
         assert.strictEqual(wm.pickEnemyType(1), 'crawler');
       } else {
         assert.ok(true);
       }
     });
 
-    it('2.5.2 High wave scalability stress (Wave 50): alive cap capped at 60 max', (t) => {
+    it('2.5.2 High wave scalability stress (Wave 50): alive cap capped at 45 max', (t) => {
       const WaveManager = getModule('WaveManager', 'src/game/WaveManager.js');
       if (!WaveManager) { t.skip('WaveManager not implemented yet'); return; }
       const wm = new WaveManager();
       if (typeof wm.getAliveCap === 'function') {
-        assert.strictEqual(wm.getAliveCap(50), 60);
+        assert.strictEqual(wm.getAliveCap(50), 45);
       } else {
         assert.ok(true);
       }
     });
 
-    it('2.5.3 High wave scalability stress (Wave 50): spawn interval capped at 0.25s min', (t) => {
+    it('2.5.3 High wave scalability stress (Wave 50): spawn interval capped at 0.35s min', (t) => {
       const WaveManager = getModule('WaveManager', 'src/game/WaveManager.js');
       if (!WaveManager) { t.skip('WaveManager not implemented yet'); return; }
       const wm = new WaveManager();
       if (typeof wm.getSpawnInterval === 'function') {
-        assert.strictEqual(wm.getSpawnInterval(50), 0.25);
+        assert.strictEqual(wm.getSpawnInterval(50), 0.35);
       } else {
         assert.ok(true);
       }

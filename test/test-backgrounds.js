@@ -63,6 +63,23 @@ class MockCanvas {
 global.TZ = global.TZ || {};
 global.TZ.MockCanvas = MockCanvas;
 
+// Lightweight Headless Stubs for Game Coordinator Isolation
+global.TZ.Vector2 = global.TZ.Vector2 || class Vector2 { constructor(x=0,y=0){this.x=x;this.y=y;} };
+global.TZ.Camera = global.TZ.Camera || class Camera { constructor(){this.x=0;this.y=0;this.width=1280;this.height=720;} begin(){}; end(){}; shake(){}; update(){}; };
+global.TZ.CanvasRenderer = global.TZ.CanvasRenderer || class CanvasRenderer { constructor(){this.virtualWidth=1280;this.virtualHeight=720;} toVirtual(x,y){return {x,y};} createOffscreenCanvas(){return new MockCanvas();} clear(){}; };
+global.TZ.GameLoop = global.TZ.GameLoop || class GameLoop { constructor(opts={}){this.onUpdate=opts.update||(()=>{});} start(){}; stop(){}; };
+global.TZ.ParticleSystem = global.TZ.ParticleSystem || class ParticleSystem { constructor(){}; emit(){}; update(){}; draw(){}; reset(){}; clear(){}; };
+global.TZ.SpriteGen = global.TZ.SpriteGen || { initAll(){}, get(){ return new MockCanvas(); }, SPRITE_DEFS: {} };
+global.TZ.AudioSynth = global.TZ.AudioSynth || class AudioSynth { constructor(){}; unlock(){}; playSlash(){}; playHit(){}; playWaveClear(){}; playGameOver(){}; playVictory(){}; };
+global.TZ.Katana = global.TZ.Katana || class Katana { constructor(){ this.projectiles = []; }; onMouseMove(){}; triggerForcedSlash(){}; update(){}; draw(){}; reset(){ this.projectiles = []; }; isSlashing(){ return false; }; canSlash(){ return false; }; getSweptQuad(){ return null; }; getSpeed(){ return 0; }; getBladeTip(){ return {x:0,y:0}; }; getBladeBase(){ return {x:0,y:0}; }; getAngle(){ return 0; }; getWaveReadyGauge(){ return 0; }; };
+global.TZ.Slicer = global.TZ.Slicer || class Slicer { constructor(){}; slice(){}; };
+global.TZ.Enemy = global.TZ.Enemy || class Enemy { constructor(){}; };
+global.TZ.EnemyProjectile = global.TZ.EnemyProjectile || class EnemyProjectile { constructor(){}; };
+global.TZ.SoulAltar = global.TZ.SoulAltar || class SoulAltar { constructor(){this.hp=100;this.maxHp=100;} update(){}; restoreHealth(v){this.hp=Math.min(this.maxHp, this.hp+v);} isDestroyed(){return this.hp<=0;} getState(){return 'HEALTHY';} reset(){this.hp=100;} };
+const WaveManager = require('../src/game/WaveManager.js').WaveManager;
+global.TZ.WaveManager = WaveManager;
+global.TZ.ScoreManager = global.TZ.ScoreManager || class ScoreManager { constructor(){this.score=0;this.highScore=0;this.kills=0;this.combo=0;this.maxCombo=0;this.survivalTime=0;} addKill(){}; update(){}; reset(){}; };
+
 const { BackgroundManager, LOCATIONS } = require('../src/engine/BackgroundManager.js');
 
 describe('BackgroundManager: Chronological Bleach Story Stages', () => {
@@ -71,48 +88,36 @@ describe('BackgroundManager: Chronological Bleach Story Stages', () => {
     let bg;
     beforeEach(() => { bg = new BackgroundManager(); });
 
-    it('1.1 maps Waves 1, 2, 3 to Karakura Town (Substitute Shinigami Arc)', () => {
+    it('1.1 maps Wave 1 to Karakura Town (Substitute Shinigami Arc)', () => {
       assert.strictEqual(bg.getLocationForWave(1), 'karakura');
-      assert.strictEqual(bg.getLocationForWave(2), 'karakura');
-      assert.strictEqual(bg.getLocationForWave(3), 'karakura');
     });
 
-    it('1.2 maps Waves 4, 5, 6 to Rukongai Outskirts (Soul Society Infiltration)', () => {
-      assert.strictEqual(bg.getLocationForWave(4), 'rukongai');
-      assert.strictEqual(bg.getLocationForWave(5), 'rukongai');
-      assert.strictEqual(bg.getLocationForWave(6), 'rukongai');
+    it('1.2 maps Waves 2 and 3 to Rukongai Outskirts (Soul Society Infiltration & Gate Breach)', () => {
+      assert.strictEqual(bg.getLocationForWave(2), 'rukongai');
+      assert.strictEqual(bg.getLocationForWave(3), 'rukongai');
     });
 
-    it('1.3 maps Waves 7, 8, 9 to Seireitei Infiltration (Gotei 13 Fortress)', () => {
-      assert.strictEqual(bg.getLocationForWave(7), 'seireitei');
-      assert.strictEqual(bg.getLocationForWave(8), 'seireitei');
-      assert.strictEqual(bg.getLocationForWave(9), 'seireitei');
+    it('1.3 maps Wave 4 to Seireitei Infiltration (Gotei 13 Fortress)', () => {
+      assert.strictEqual(bg.getLocationForWave(4), 'seireitei');
     });
 
-    it('1.4 maps Waves 10, 11, 12 to The Sōkyoku Hill (Execution Grounds & Bankai)', () => {
-      assert.strictEqual(bg.getLocationForWave(10), 'sokyoku');
-      assert.strictEqual(bg.getLocationForWave(11), 'sokyoku');
-      assert.strictEqual(bg.getLocationForWave(12), 'sokyoku');
+    it('1.4 maps Wave 5 to The Sōkyoku Hill (Execution Grounds & Bankai Duel)', () => {
+      assert.strictEqual(bg.getLocationForWave(5), 'sokyoku');
     });
 
-    it('1.5 maps Waves 13, 14, 15 to Hueco Mundo (White Sand Dunes)', () => {
-      assert.strictEqual(bg.getLocationForWave(13), 'huecomundo');
-      assert.strictEqual(bg.getLocationForWave(14), 'huecomundo');
-      assert.strictEqual(bg.getLocationForWave(15), 'huecomundo');
+    it('1.5 maps Wave 6 to Hueco Mundo (White Sand Dunes)', () => {
+      assert.strictEqual(bg.getLocationForWave(6), 'huecomundo');
     });
 
-    it('1.6 maps Waves 16, 17, 18, 19 to Las Noches Palace (Espada Colonnades)', () => {
-      assert.strictEqual(bg.getLocationForWave(16), 'lasnoches');
-      assert.strictEqual(bg.getLocationForWave(17), 'lasnoches');
-      assert.strictEqual(bg.getLocationForWave(18), 'lasnoches');
-      assert.strictEqual(bg.getLocationForWave(19), 'lasnoches');
+    it('1.6 maps Wave 7 to Las Noches Palace (Espada Colonnades)', () => {
+      assert.strictEqual(bg.getLocationForWave(7), 'lasnoches');
     });
 
-    it('1.7 maps Waves 20 and higher to Fake Karakura Town (Endgame War)', () => {
+    it('1.7 maps Waves 8 and higher to Fake Karakura Town (Endgame War & Finale)', () => {
+      assert.strictEqual(bg.getLocationForWave(8), 'fakekarakura');
+      assert.strictEqual(bg.getLocationForWave(9), 'fakekarakura');
+      assert.strictEqual(bg.getLocationForWave(10), 'fakekarakura');
       assert.strictEqual(bg.getLocationForWave(20), 'fakekarakura');
-      assert.strictEqual(bg.getLocationForWave(25), 'fakekarakura');
-      assert.strictEqual(bg.getLocationForWave(50), 'fakekarakura');
-      assert.strictEqual(bg.getLocationForWave(100), 'fakekarakura');
     });
 
     it('1.8 gracefully clamps invalid, zero, or negative waves to Karakura', () => {
@@ -179,19 +184,23 @@ describe('BackgroundManager: Chronological Bleach Story Stages', () => {
     });
 
     it('3.3 onWaveChange automatically triggers transition only on biome shift', () => {
-      // Wave 1 -> Wave 2: same biome (karakura -> karakura) -> no transition
+      // Wave 2 -> Wave 3: same biome (rukongai -> rukongai) -> no transition
       bg.onWaveChange(2);
-      assert.strictEqual(bg.transitionProgress, 1.0);
-      assert.strictEqual(bg.targetLocationKey, 'karakura');
+      bg.update(2.0); // complete transition to rukongai
+      assert.strictEqual(bg.currentLocationKey, 'rukongai');
 
-      // Wave 2 -> Wave 4: biome shift (karakura -> rukongai) -> triggers transition
+      bg.onWaveChange(3); // same biome
+      assert.strictEqual(bg.transitionProgress, 1.0);
+      assert.strictEqual(bg.targetLocationKey, 'rukongai');
+
+      // Wave 3 -> Wave 4: biome shift (rukongai -> seireitei) -> triggers transition
       bg.onWaveChange(4);
       assert.strictEqual(bg.transitionProgress, 0.0);
-      assert.strictEqual(bg.targetLocationKey, 'rukongai');
+      assert.strictEqual(bg.targetLocationKey, 'seireitei');
     });
 
     it('3.4 reset() cleanly returns to Karakura with transition complete', () => {
-      bg.onWaveChange(10); // Sokyoku
+      bg.onWaveChange(5); // Sokyoku
       bg.update(2.0);
       assert.strictEqual(bg.currentLocationKey, 'sokyoku');
 
@@ -297,15 +306,15 @@ describe('BackgroundManager: Chronological Bleach Story Stages', () => {
       const game = new Game(mockCanvas);
       game.startGame();
 
-      // Advance to Wave 4 (Rukongai)
-      game.waves.currentWave = 3;
-      game.waves.spawnedInWave = game.waves.calculateEnemyCount(3);
+      // Clear Wave 1 (Karakura) -> Advance to Wave 2 (Rukongai)
+      game.waves.currentWave = 1;
+      game.waves.spawnedInWave = game.waves.calculateEnemyCount(1);
       game.enemies = [];
 
       // Next game update detects wave completion
       game.update(1 / 120);
 
-      assert.strictEqual(game.waves.currentWave, 4);
+      assert.strictEqual(game.waves.currentWave, 2);
       assert.strictEqual(game.background.targetLocationKey, 'rukongai');
       assert.ok(game.background.bannerTimer > 0);
       assert.strictEqual(game.background.bannerLocation.id, 'rukongai');
@@ -324,6 +333,27 @@ describe('BackgroundManager: Chronological Bleach Story Stages', () => {
       assert.strictEqual(game.background.currentLocationKey, 'karakura');
       assert.strictEqual(game.background.targetLocationKey, 'karakura');
       assert.ok(game.background.bannerTimer > 0);
+    });
+
+    it('6.4 completing Wave 10 transitions Game to VICTORY state with fanfare', () => {
+      const { Game } = require('../src/game/Game.js');
+      const mockCanvas = new MockCanvas();
+      const game = new Game(mockCanvas);
+      game.startGame();
+
+      let victoryPlayed = false;
+      game.audio.playVictory = () => { victoryPlayed = true; };
+
+      // Set to wave 10 and clear all enemies
+      game.waves.currentWave = 10;
+      game.waves.spawnedInWave = game.waves.calculateEnemyCount(10);
+      game.enemies = [];
+
+      game.update(1 / 120);
+
+      assert.strictEqual(game.state, 'VICTORY');
+      assert.strictEqual(game.waves.currentWave, 10, 'Should not advance past wave 10');
+      assert.strictEqual(victoryPlayed, true, 'Victory sound should be triggered');
     });
   });
 

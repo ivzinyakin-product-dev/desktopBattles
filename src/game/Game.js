@@ -20,28 +20,30 @@
   let Katana = (global.TZ && global.TZ.Katana);
   let Slicer = (global.TZ && global.TZ.Slicer);
   let Enemy = (global.TZ && global.TZ.Enemy);
+  let EnemyProjectile = (global.TZ && global.TZ.EnemyProjectile) || (Enemy && Enemy.EnemyProjectile);
   let SoulAltar = (global.TZ && global.TZ.SoulAltar);
   let WaveManager = (global.TZ && global.TZ.WaveManager);
   let ScoreManager = (global.TZ && global.TZ.ScoreManager);
   let BackgroundManager = (global.TZ && global.TZ.BackgroundManager);
 
   if (typeof require !== 'undefined') {
-    Vector2 = Vector2 || require('../engine/Vector2').Vector2;
-    Camera = Camera || require('../engine/Camera').Camera;
-    CanvasRenderer = CanvasRenderer || require('../engine/CanvasRenderer').CanvasRenderer;
-    GameLoop = GameLoop || require('../engine/GameLoop').GameLoop;
-    ParticleSystem = ParticleSystem || require('../engine/ParticleSystem').ParticleSystem;
-    SpriteGen = SpriteGen || require('../engine/SpriteGen').SpriteGen;
-    AudioSynth = AudioSynth || require('../engine/AudioSynth').AudioSynth;
+    Vector2 = Vector2 || require('../engine/Vector2.js').Vector2;
+    Camera = Camera || require('../engine/Camera.js').Camera;
+    CanvasRenderer = CanvasRenderer || require('../engine/CanvasRenderer.js').CanvasRenderer;
+    GameLoop = GameLoop || require('../engine/GameLoop.js').GameLoop;
+    ParticleSystem = ParticleSystem || require('../engine/ParticleSystem.js').ParticleSystem;
+    SpriteGen = SpriteGen || require('../engine/SpriteGen.js').SpriteGen;
+    AudioSynth = AudioSynth || require('../engine/AudioSynth.js').AudioSynth;
     BackgroundManager = BackgroundManager || (function () {
-      try { return require('../engine/BackgroundManager').BackgroundManager; } catch (e) { return null; }
+      try { return require('../engine/BackgroundManager.js').BackgroundManager; } catch (e) { return null; }
     })();
-    Katana = Katana || require('./Katana').Katana;
-    Slicer = Slicer || require('./Slicer').Slicer;
-    Enemy = Enemy || require('./Enemy').Enemy;
-    SoulAltar = SoulAltar || require('./SoulAltar').SoulAltar;
-    WaveManager = WaveManager || require('./WaveManager').WaveManager;
-    ScoreManager = ScoreManager || require('./ScoreManager').ScoreManager;
+    Katana = Katana || require('./Katana.js').Katana;
+    Slicer = Slicer || require('./Slicer.js').Slicer;
+    Enemy = Enemy || require('./Enemy.js').Enemy;
+    EnemyProjectile = EnemyProjectile || (Enemy && Enemy.EnemyProjectile) || (function () { try { return require('./Enemy.js').EnemyProjectile; } catch (e) { return null; } })();
+    SoulAltar = SoulAltar || require('./SoulAltar.js').SoulAltar;
+    WaveManager = WaveManager || require('./WaveManager.js').WaveManager;
+    ScoreManager = ScoreManager || require('./ScoreManager.js').ScoreManager;
   }
 
   class Game {
@@ -76,10 +78,11 @@
       // Entity storage
       this.enemies = [];
       this.debris = [];
+      this.enemyProjectiles = [];
       this.floatingTexts = [];
       this.slashHitEnemies = new Set();
 
-      // Game state machine: 'TITLE' | 'PLAYING' | 'PAUSED' | 'GAMEOVER'
+      // Game state machine: 'TITLE' | 'PLAYING' | 'PAUSED' | 'GAMEOVER' | 'VICTORY'
       this.state = 'TITLE';
       this.highScore = this._loadHighScore();
 
@@ -140,7 +143,7 @@
           this.startGame();
           return;
         }
-        if (this.state === 'GAMEOVER') {
+        if (this.state === 'GAMEOVER' || this.state === 'VICTORY') {
           this.restart();
           return;
         }
@@ -171,11 +174,18 @@
               this._fireGetsugaWave();
             } else if (this.state === 'TITLE') {
               this.startGame();
-            } else if (this.state === 'GAMEOVER') {
+            } else if (this.state === 'GAMEOVER' || this.state === 'VICTORY') {
+              this.restart();
+            }
+          } else if (e.code === 'Enter') {
+            e.preventDefault();
+            if (this.state === 'TITLE') {
+              this.startGame();
+            } else if (this.state === 'GAMEOVER' || this.state === 'VICTORY') {
               this.restart();
             }
           } else if (e.key === 'r' || e.key === 'R') {
-            if (this.state === 'GAMEOVER' || this.state === 'PLAYING') {
+            if (this.state === 'GAMEOVER' || this.state === 'VICTORY' || this.state === 'PLAYING') {
               this.restart();
             }
           } else if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
@@ -251,6 +261,7 @@
       this.state = 'PLAYING';
       this.enemies = [];
       this.debris = [];
+      this.enemyProjectiles = [];
       this.floatingTexts = [];
       this.slashHitEnemies.clear();
       this.particles.clear();
@@ -348,6 +359,9 @@
       // 4. Enemy Movement & Altar Collision
       this._updateEnemies(dt);
 
+      // 4.5. Enemy Projectiles
+      this._updateEnemyProjectiles(dt);
+
       // 5. Debris Physics & Dissolution
       this._updateDebris(dt);
 
@@ -356,12 +370,21 @@
 
       // 7. Wave Clear Check
       if (this.waves.isWaveComplete(this.enemies)) {
-        this.altar.restoreHealth(15);
-        this.waves.nextWave();
-        if (this.background && typeof this.background.onWaveChange === 'function') {
-          this.background.onWaveChange(this.waves.currentWave);
+        if (this.waves.isFinalWave && this.waves.isFinalWave()) {
+          this.state = 'VICTORY';
+          this._saveHighScore(this.scores.score);
+          if (this.audio && typeof this.audio.playVictory === 'function') {
+            this.audio.playVictory();
+          }
+          this.addFloatingText(640, 320, 'CAMPAIGN COMPLETE! VICTORY!', '#facc15', 30);
+        } else {
+          this.altar.restoreHealth(15);
+          this.waves.nextWave();
+          if (this.background && typeof this.background.onWaveChange === 'function') {
+            this.background.onWaveChange(this.waves.currentWave);
+          }
+          this.addFloatingText(640, 320, 'WAVE CLEAR! +15 HP RESTORED', '#00e5ff', 20);
         }
-        this.addFloatingText(640, 320, 'WAVE CLEAR! +15 HP RESTORED', '#00e5ff', 20);
       }
 
       // 8. Defeat Condition
@@ -530,7 +553,12 @@
         }
 
         // Update enemy AI position
-        enemy.update(dt, altarPos, this.katana);
+        const updateRes = enemy.update(dt, altarPos, this.katana);
+        if (updateRes && updateRes.spawnProjectile && EnemyProjectile) {
+          const sp = updateRes.spawnProjectile;
+          const proj = new EnemyProjectile(sp.x, sp.y, sp.targetX, sp.targetY, sp.type, { particleSystem: this.particles });
+          this.enemyProjectiles.push(proj);
+        }
 
         // Check if enemy touched Soul Altar
         const dx = enemy.x - altarPos.x;
@@ -547,6 +575,63 @@
 
       if (totalBatchDamage > 0) {
         this.altar.takeBatchDamage(totalBatchDamage);
+      }
+    }
+
+    /**
+     * Updates enemy projectiles (Hadō #31 Shakkahō & Arrancar Bala),
+     * checks Altar collision, and handles blade deflection.
+     * @private
+     */
+    _updateEnemyProjectiles(dt) {
+      const isSlashing = this.katana.isSlashing();
+      const bladeQuad = this.katana.getSweptQuad();
+      const getsugaWaves = this.katana.projectiles || [];
+
+      for (let i = this.enemyProjectiles.length - 1; i >= 0; i--) {
+        const p = this.enemyProjectiles[i];
+        if (!p || p.isDead) {
+          this.enemyProjectiles.splice(i, 1);
+          continue;
+        }
+
+        // Update movement and Altar breach
+        const res = p.update(dt, this.altar);
+        if (res && res.hitAltar) {
+          this.altar.takeDamage(res.damage);
+          this.camera.addTrauma(0.20);
+          this.audio.playAltarHit();
+          this.addFloatingText(this.altar.x, this.altar.y - 20, `-${res.damage} HP!`, '#ef4444', 16);
+          this.enemyProjectiles.splice(i, 1);
+          continue;
+        }
+
+        // Blade slice deflection
+        if (isSlashing && bladeQuad && bladeQuad.intersectsCircle({ x: p.x, y: p.y }, p.radius)) {
+          p.isDead = true;
+          const sparkColor = (p.type === 'shakkaho') ? '#ef4444' : '#10b981';
+          this.particles.spawnEmbers(p.x, p.y, 10, 0, sparkColor);
+          this.audio.playClash();
+          this.scores.score += 50;
+          this.addFloatingText(p.x, p.y - 12, 'DEFLECTED! +50', '#38bdf8', 14);
+          this.enemyProjectiles.splice(i, 1);
+          continue;
+        }
+
+        // Kuroi Getsuga wave collision
+        for (let j = 0; j < getsugaWaves.length; j++) {
+          const wave = getsugaWaves[j];
+          if (wave && !wave.isDead && typeof wave.intersectsCircle === 'function') {
+            if (wave.intersectsCircle({ x: p.x, y: p.y }, p.radius)) {
+              p.isDead = true;
+              this.particles.spawnEmbers(p.x, p.y, 10, 0, '#ffffff');
+              this.scores.score += 50;
+              this.addFloatingText(p.x, p.y - 12, 'OBLITERATED! +50', '#ff0033', 14);
+              this.enemyProjectiles.splice(i, 1);
+              break;
+            }
+          }
+        }
       }
     }
 
@@ -623,6 +708,11 @@
         const projectiles = this.katana.projectiles;
         for (let i = 0; i < projectiles.length; i++) {
           projectiles[i].draw(ctx);
+        }
+
+        // Enemy Projectiles (Hadō #31 & Bala)
+        for (let i = 0; i < this.enemyProjectiles.length; i++) {
+          this.enemyProjectiles[i].draw(ctx);
         }
 
         // Particles
@@ -797,13 +887,15 @@
       ctx.fillStyle = '#ffffff';
       ctx.fillText(waveGauge >= 1.0 ? 'GETSUGA: READY [R-CLICK]' : 'CHARGING REIATSU...', 36, 677);
 
-      // Modal Overlays for TITLE, PAUSED, and GAMEOVER
+      // Modal Overlays for TITLE, PAUSED, GAMEOVER, and VICTORY
       if (this.state === 'TITLE') {
         this._drawTitleScreen(ctx);
       } else if (this.state === 'PAUSED') {
         this._drawPauseScreen(ctx);
       } else if (this.state === 'GAMEOVER') {
         this._drawGameOverScreen(ctx);
+      } else if (this.state === 'VICTORY') {
+        this._drawVictoryScreen(ctx);
       }
 
       ctx.restore();
@@ -905,6 +997,96 @@
       const blink = Math.sin(Date.now() * 0.007) > 0;
       if (blink) {
         ctx.fillText('[ CLICK OR PRESS [R] TO RETRY ]', 640, 540);
+      }
+    }
+
+    /**
+     * Draws Victory screen modal upon completing all 10 story waves.
+     * @private
+     */
+    _drawVictoryScreen(ctx) {
+      ctx.fillStyle = 'rgba(8, 7, 18, 0.94)';
+      ctx.fillRect(0, 0, 1280, 720);
+
+      // Golden spiritual victory kanji
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 44px serif';
+      ctx.fillStyle = '#facc15';
+      ctx.shadowColor = '#facc15';
+      ctx.shadowBlur = 18;
+      ctx.fillText('完 全 勝 利', 640, 160);
+      ctx.shadowBlur = 0;
+
+      // Header
+      ctx.font = 'bold 36px "Courier New", monospace';
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = '#a855f7';
+      ctx.shadowBlur = 14;
+      ctx.fillText('VICTORY: SOUL SOCIETY SAVED', 640, 215);
+      ctx.shadowBlur = 0;
+
+      // Subheader narrative
+      ctx.font = '15px "Courier New", monospace';
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillText('All 10 Waves Repelled • The Tenkaiketchu Barriers Stand Firm', 640, 250);
+
+      // Rank calculation based on remaining altar integrity & max combo
+      const hpRatio = this.altar ? (this.altar.hp / this.altar.maxHp) : 1;
+      let rank = 'C';
+      let rankColor = '#94a3b8';
+      if (hpRatio >= 0.8 && this.scores.maxCombo >= 20) {
+        rank = 'S';
+        rankColor = '#facc15'; // Gold
+      } else if (hpRatio >= 0.5 && this.scores.maxCombo >= 10) {
+        rank = 'A';
+        rankColor = '#00e5ff'; // Cyan
+      } else if (hpRatio >= 0.2) {
+        rank = 'B';
+        rankColor = '#4ade80'; // Emerald
+      }
+
+      // Statistics Card
+      ctx.fillStyle = 'rgba(23, 21, 39, 0.88)';
+      ctx.strokeStyle = rankColor;
+      ctx.lineWidth = 2;
+      ctx.fillRect(380, 280, 520, 240);
+      ctx.strokeRect(380, 280, 520, 240);
+
+      // Rank Display
+      ctx.font = 'bold 36px "Courier New", monospace';
+      ctx.fillStyle = rankColor;
+      ctx.shadowColor = rankColor;
+      ctx.shadowBlur = 10;
+      ctx.fillText(`COMBAT RANK: ${rank}`, 640, 330);
+      ctx.shadowBlur = 0;
+
+      // Score and highscore
+      ctx.font = 'bold 18px "Courier New", monospace';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(`FINAL SCORE: ${this.scores.score}`, 640, 370);
+
+      ctx.font = '14px "Courier New", monospace';
+      ctx.fillStyle = '#eab308';
+      ctx.fillText(`HIGH SCORE: ${Math.max(this.highScore, this.scores.score)}`, 640, 400);
+
+      // Timing and stats
+      ctx.fillStyle = '#94a3b8';
+      const mins = Math.floor(this.scores.survivalTime / 60);
+      const secs = Math.floor(this.scores.survivalTime % 60);
+      const timeStr = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      ctx.fillText(`CLEAR TIME: ${timeStr}  |  MAX COMBO: ${this.scores.maxCombo}x`, 640, 435);
+      ctx.fillText(`FOES BISECTED: ${this.scores.kills}  |  ALTAR INTEGRITY: ${Math.round(hpRatio * 100)}%`, 640, 465);
+
+      ctx.font = 'bold 13px "Courier New", monospace';
+      ctx.fillStyle = '#f43f5e';
+      ctx.fillText('BANKAI TRANSCENDENCE ACHIEVED', 640, 495);
+
+      // Replay Action
+      ctx.font = 'bold 20px "Courier New", monospace';
+      ctx.fillStyle = '#00e5ff';
+      const blink = Math.sin(Date.now() * 0.007) > 0;
+      if (blink) {
+        ctx.fillText('[ CLICK OR PRESS SPACE / ENTER TO PLAY AGAIN ]', 640, 580);
       }
     }
   }
