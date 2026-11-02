@@ -58,7 +58,8 @@
       this.angle = (this.dirX === 0 && this.dirY === 0) ? 0 : Math.atan2(this.dirY, this.dirX);
 
       // Geometry: Parabolic Bezier crescent (R = 42px, thickness 16px)
-      this.radius = typeof options.radius === 'number' ? options.radius : 42;
+      this.radius = typeof options.radius === 'number' ? options.radius : (typeof options.width === 'number' ? options.width : 42);
+      this.width = this.radius;
       this.thickness = typeof options.thickness === 'number' ? options.thickness : 16;
 
       // Lifecycle & Penetration (lifespan 1.6s, up to 8 enemies)
@@ -71,6 +72,11 @@
       // Combat stats
       this.damage = typeof options.damage === 'number' ? options.damage : 60;
       this.hitEntities = new Set();
+
+      // Visual styling (Bleach Zanpakuto forms: White, Kuroi, Void)
+      this.auraColor = options.auraColor || '#ff0033';
+      this.coreColor = options.coreColor || '#050508';
+      this.emberColor = options.emberColor || this.auraColor;
 
       // Particle wake integration
       this.particleSystem = options.particleSystem || null;
@@ -284,14 +290,14 @@
             ps.spawnSmoke(tailX, tailY, 1);
           }
           if (typeof ps.spawnEmbers === 'function') {
-            ps.spawnEmbers(tailX, tailY, 2, this.angle + Math.PI, '#ff0033');
+            ps.spawnEmbers(tailX, tailY, 2, this.angle + Math.PI, this.emberColor);
           }
         }
       }
     }
 
     /**
-     * Renders parabolic Bezier crescent with jet-black core and glowing crimson stroke
+     * Renders parabolic Bezier crescent with form-specific core and glowing aura stroke
      * @param {CanvasRenderingContext2D} ctx 
      */
     draw(ctx) {
@@ -322,21 +328,21 @@
       }
       ctx.closePath();
 
-      // Outer Pass: Glowing Crimson Aura
+      // Outer Pass: Glowing Reiatsu Aura
       ctx.save();
-      ctx.shadowColor = '#ff0033';
+      ctx.shadowColor = this.auraColor;
       ctx.shadowBlur = 18;
-      ctx.strokeStyle = '#ff0033';
+      ctx.strokeStyle = this.auraColor;
       ctx.lineWidth = 3;
       ctx.stroke();
       ctx.restore();
 
-      // Inner Pass: Pitch Jet-Black Core Ribbon
-      ctx.fillStyle = '#050508';
+      // Inner Pass: Form Core Ribbon (White, Jet-Black, Void)
+      ctx.fillStyle = this.coreColor;
       ctx.fill();
 
-      // Sharp Crimson Perimeter Stroke
-      ctx.strokeStyle = '#ff0033';
+      // Sharp Perimeter Stroke
+      ctx.strokeStyle = this.auraColor;
       ctx.lineWidth = 1.5;
       ctx.stroke();
 

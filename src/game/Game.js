@@ -18,6 +18,7 @@
   let SpriteGen = (global.TZ && global.TZ.SpriteGen);
   let AudioSynth = (global.TZ && global.TZ.AudioSynth);
   let Katana = (global.TZ && global.TZ.Katana);
+  let ZANPAKUTO_FORMS = (global.TZ && global.TZ.ZANPAKUTO_FORMS);
   let Slicer = (global.TZ && global.TZ.Slicer);
   let Enemy = (global.TZ && global.TZ.Enemy);
   let EnemyProjectile = (global.TZ && global.TZ.EnemyProjectile) || (Enemy && Enemy.EnemyProjectile);
@@ -37,7 +38,11 @@
     BackgroundManager = BackgroundManager || (function () {
       try { return require('../engine/BackgroundManager.js').BackgroundManager; } catch (e) { return null; }
     })();
-    Katana = Katana || require('./Katana.js').Katana;
+    try {
+      const katanaMod = require('./Katana.js');
+      Katana = Katana || katanaMod.Katana;
+      ZANPAKUTO_FORMS = ZANPAKUTO_FORMS || katanaMod.ZANPAKUTO_FORMS;
+    } catch (e) {}
     Slicer = Slicer || require('./Slicer.js').Slicer;
     Enemy = Enemy || require('./Enemy.js').Enemy;
     EnemyProjectile = EnemyProjectile || (Enemy && Enemy.EnemyProjectile) || (function () { try { return require('./Enemy.js').EnemyProjectile; } catch (e) { return null; } })();
@@ -150,7 +155,11 @@
         if (this.state === 'PLAYING') {
           if (e.button === 0) {
             // Left click: Forced Senka Slash
-            this.katana.triggerForcedSlash();
+            const slashed = this.katana.triggerForcedSlash();
+            if (!slashed && this.katana.currentForm && !this.katana.currentForm.hasSenka) {
+              const hilt = this.katana.hilt || { x: 640, y: 360 };
+              this.addFloatingText(hilt.x, hilt.y - 20, 'SENKA LOCKED [BANKAI REQUIRED]', '#94a3b8', 14);
+            }
           } else if (e.button === 2) {
             // Right click: Ranged Getsuga Tensho Wave
             this._fireGetsugaWave();
@@ -200,12 +209,23 @@
     }
 
     /**
-     * Fires a Kuroi Getsuga Tensho wave toward current blade heading.
+     * Fires a Getsuga Tensho wave toward current blade heading.
+     * Respects Zanpakuto form progression (locked during SEALED state).
      * @private
      */
     _fireGetsugaWave() {
-      const tip = this.katana.tip;
-      const hilt = this.katana.hilt;
+      const hilt = this.katana.hilt || { x: 640, y: 360 };
+
+      // Locked in Sealed Asauchi form
+      if (this.katana.currentForm && !this.katana.currentForm.hasGetsuga) {
+        this.addFloatingText(hilt.x, hilt.y - 20, 'REIATSU DORMANT [SHIKAI REQUIRED]', '#94a3b8', 14);
+        if (this.audio && typeof this.audio.playClash === 'function') {
+          this.audio.playClash();
+        }
+        return;
+      }
+
+      const tip = this.katana.tip || { x: 640, y: 360 };
       let dx = tip.x - hilt.x;
       let dy = tip.y - hilt.y;
       const len = Math.hypot(dx, dy) || 1;
@@ -272,7 +292,48 @@
         this.background.reset();
       }
       this.katana.reset ? this.katana.reset() : (this.katana.projectiles = []);
+      if (this.katana && typeof this.katana.setForm === 'function') {
+        const formKey = this.getZanpakutoFormForWave(this.waves.currentWave);
+        this.katana.setForm(formKey, false);
+      }
       this.camera.trauma = 0;
+    }
+
+    /**
+     * Determines canonical Zanpakuto form for given story wave.
+     * Wave 1: SEALED (Asauchi)
+     * Waves 2-4: SHIKAI (Zangetsu)
+     * Waves 5-7: BANKAI (Tensa Zangetsu)
+     * Waves 8-10: DANGAI (Mugetsu)
+     * @param {number} wave
+     * @returns {string} 'SEALED' | 'SHIKAI' | 'BANKAI' | 'DANGAI'
+     */
+    getZanpakutoFormForWave(wave) {
+      const w = Number(wave) || 1;
+      if (w >= 8) return 'DANGAI';
+      if (w >= 5) return 'BANKAI';
+      if (w >= 2) return 'SHIKAI';
+      return 'SEALED';
+    }
+
+    /**
+     * Checks if current wave requires a Zanpakuto form awakening and applies it.
+     * Triggers procedural awakening fanfare, screen banners, and particle bursts.
+     * @private
+     */
+    _checkZanpakutoProgression() {
+      const targetFormKey = this.getZanpakutoFormForWave(this.waves.currentWave);
+      if (this.katana && this.katana.currentFormKey !== targetFormKey) {
+        this.katana.setForm(targetFormKey, true);
+        if (this.audio && typeof this.audio.playAwakening === 'function') {
+          this.audio.playAwakening(targetFormKey);
+        }
+        const form = this.katana.currentForm;
+        if (form) {
+          this.addFloatingText(640, 255, form.shout, form.glowColor, 26);
+          this.addFloatingText(640, 288, `[ ${form.name.toUpperCase()} AWAKENED ]`, '#ffffff', 18);
+        }
+      }
     }
 
     /**
@@ -384,6 +445,7 @@
             this.background.onWaveChange(this.waves.currentWave);
           }
           this.addFloatingText(640, 320, 'WAVE CLEAR! +15 HP RESTORED', '#00e5ff', 20);
+          this._checkZanpakutoProgression();
         }
       }
 
@@ -836,7 +898,7 @@
 
       ctx.font = '12px "Courier New", monospace';
       ctx.fillStyle = '#a1a1aa';
-      ctx.fillText(`HOLLOWS REMAINING: ${remaining}`, 640, 56);
+      ctx.fillText(`ENEMIES REMAINING: ${remaining}`, 640, 56);
 
       // Top Right: Score & High Score
       ctx.textAlign = 'right';
@@ -868,24 +930,55 @@
         ctx.fillRect(1050, 694, 200 * timerRatio, 4);
       }
 
-      // Bottom Left: Reiatsu / Getsuga Wave Gauge
-      ctx.textAlign = 'left';
-      const waveGauge = this.katana.crescentCooldownTimer <= 0
-        ? 1.0
-        : Math.max(0, 1.0 - (this.katana.crescentCooldownTimer / this.katana.crescentCooldown));
+      // Bottom Left: Zanpakuto Form & Ability State
+      const form = this.katana.currentForm;
+      const formKey = this.katana.currentFormKey || 'BANKAI';
+      const formGlow = form ? form.glowColor : '#ef4444';
+      const hasGetsuga = form ? form.hasGetsuga : true;
 
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      // Form Badge Box
+      ctx.textAlign = 'left';
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+      ctx.strokeStyle = formGlow;
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(30, 634, 230, 22);
+      ctx.strokeRect(30, 634, 230, 22);
+
+      // Form Badge Text
+      ctx.font = 'bold 11px "Courier New", monospace';
+      ctx.fillStyle = formGlow;
+      let formBadgeTitle = form ? `[ ${form.title} ]` : `[ ${formKey} ]`;
+      ctx.fillText(formBadgeTitle, 36, 649);
+
+      // Reiatsu / Getsuga Wave Gauge
+      const waveGauge = !hasGetsuga ? 0 : (this.katana.crescentCooldownTimer <= 0
+        ? 1.0
+        : Math.max(0, 1.0 - (this.katana.crescentCooldownTimer / this.katana.crescentCooldown)));
+
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
       ctx.strokeStyle = '#27272a';
       ctx.lineWidth = 1.5;
-      ctx.fillRect(30, 665, 180, 16);
-      ctx.strokeRect(30, 665, 180, 16);
+      ctx.fillRect(30, 663, 230, 18);
+      ctx.strokeRect(30, 663, 230, 18);
 
-      ctx.fillStyle = waveGauge >= 1.0 ? '#ef4444' : '#52525b';
-      ctx.fillRect(32, 667, 176 * waveGauge, 12);
+      let gaugeFillColor = '#52525b';
+      let gaugeText = 'CHARGING REIATSU...';
+      if (!hasGetsuga) {
+        gaugeFillColor = '#334155';
+        gaugeText = 'GETSUGA: DORMANT [SHIKAI REQ]';
+      } else if (waveGauge >= 1.0) {
+        gaugeFillColor = form ? form.projectileAuraColor : '#ef4444';
+        gaugeText = 'GETSUGA: READY [R-CLICK]';
+      }
+
+      if (waveGauge > 0) {
+        ctx.fillStyle = gaugeFillColor;
+        ctx.fillRect(32, 665, 226 * waveGauge, 14);
+      }
 
       ctx.font = 'bold 10px "Courier New", monospace';
       ctx.fillStyle = '#ffffff';
-      ctx.fillText(waveGauge >= 1.0 ? 'GETSUGA: READY [R-CLICK]' : 'CHARGING REIATSU...', 36, 677);
+      ctx.fillText(gaugeText, 36, 676);
 
       // Modal Overlays for TITLE, PAUSED, GAMEOVER, and VICTORY
       if (this.state === 'TITLE') {
@@ -923,8 +1016,8 @@
 
       ctx.font = '14px "Courier New", monospace';
       ctx.fillStyle = '#a1a1aa';
-      ctx.fillText('Move Mouse: Swing Blade  |  L-Click: Senka Slash  |  R-Click / Space: Kuroi Getsuga', 640, 370);
-      ctx.fillText('Slice incoming Hollow armies and deflect Menos Grande Cero blasts to protect the Altar.', 640, 400);
+      ctx.fillText('Move Mouse: Swing Blade  |  L-Click: Senka Slash [Bankai]  |  R-Click / Space: Getsuga Wave', 640, 370);
+      ctx.fillText('Awaken Zanpakuto from Sealed form to Shikai, Bankai, and Dangai across 10 story waves.', 640, 400);
 
       ctx.font = 'bold 20px "Courier New", monospace';
       ctx.fillStyle = '#00e5ff';
@@ -988,7 +1081,7 @@
       ctx.fillText(`HIGH SCORE: ${Math.max(this.highScore, this.scores.score)}`, 640, 375);
 
       ctx.fillStyle = '#a1a1aa';
-      ctx.fillText(`HOLLOWS PURIFIED: ${this.scores.kills}`, 640, 405);
+      ctx.fillText(`ENEMIES PURIFIED: ${this.scores.kills}`, 640, 405);
       ctx.fillText(`MAX COMBO: ${this.scores.maxCombo}  |  TIME: ${Math.floor(this.scores.survivalTime)}s`, 640, 435);
 
       // Replay Action

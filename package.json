@@ -5,12 +5,13 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test test/test-engine.js test/test-combat.js test/test-e2e.js test/test-backgrounds.js test/test-factions.js",
+    "test": "node --test test/test-engine.js test/test-combat.js test/test-e2e.js test/test-backgrounds.js test/test-factions.js test/test-progression.js",
     "test:engine": "node --test test/test-engine.js",
     "test:combat": "node --test test/test-combat.js",
     "test:e2e": "node --test test/test-e2e.js",
     "test:backgrounds": "node --test test/test-backgrounds.js",
-    "test:factions": "node --test test/test-factions.js"
+    "test:factions": "node --test test/test-factions.js",
+    "test:progression": "node --test test/test-progression.js"
   },
   "keywords": [
     "game",

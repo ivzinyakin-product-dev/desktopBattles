@@ -369,6 +369,88 @@
         });
       } catch (e) {}
     }
+
+    /**
+     * Zanpakuto form awakening fanfare & spiritual pressure burst.
+     * @param {'SEALED'|'SHIKAI'|'BANKAI'|'DANGAI'} formKey
+     */
+    playAwakening(formKey = 'SHIKAI') {
+      if (this.isMuted || !this.ctx || !this.masterGain) return;
+      try {
+        const now = this.ctx.currentTime || 0;
+
+        if (formKey === 'SHIKAI') {
+          // Sharp steel chime + rising harmonic spiritual sweep
+          const notes = [587.33, 880.00, 1174.66, 1760.00];
+          notes.forEach((freq, idx) => {
+            const t = now + idx * 0.08;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, t);
+            gain.gain.setValueAtTime(0.4, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+            osc.connect(gain);
+            gain.connect(this.masterGain);
+            osc.start(t);
+            osc.stop(t + 0.55);
+          });
+        } else if (formKey === 'BANKAI') {
+          // Deep sub-bass pulse + rising electric crescendo chord
+          const subOsc = this.ctx.createOscillator();
+          const subGain = this.ctx.createGain();
+          subOsc.type = 'sine';
+          subOsc.frequency.setValueAtTime(65, now);
+          subOsc.frequency.exponentialRampToValueAtTime(130, now + 0.4);
+          subGain.gain.setValueAtTime(0.6, now);
+          subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+          subOsc.connect(subGain);
+          subGain.connect(this.masterGain);
+          subOsc.start(now);
+          subOsc.stop(now + 0.75);
+
+          // Bankai Power Chord [D minor / Darkness - D4, F4, A4, D5]
+          const chord = [293.66, 349.23, 440.00, 587.33, 880.00];
+          chord.forEach((freq) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(freq, now + 0.1);
+            gain.gain.setValueAtTime(0.25, now + 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.85);
+            osc.connect(gain);
+            gain.connect(this.masterGain);
+            osc.start(now + 0.1);
+            osc.stop(now + 0.9);
+          });
+        } else if (formKey === 'DANGAI') {
+          // Deep gravity vacuum boom (40Hz) + celestial bell ring (2093Hz)
+          const boomOsc = this.ctx.createOscillator();
+          const boomGain = this.ctx.createGain();
+          boomOsc.type = 'sine';
+          boomOsc.frequency.setValueAtTime(45, now);
+          boomOsc.frequency.exponentialRampToValueAtTime(30, now + 0.8);
+          boomGain.gain.setValueAtTime(0.7, now);
+          boomGain.gain.exponentialRampToValueAtTime(0.001, now + 1.1);
+          boomOsc.connect(boomGain);
+          boomGain.connect(this.masterGain);
+          boomOsc.start(now);
+          boomOsc.stop(now + 1.15);
+
+          // Ethereal void bell
+          const bellOsc = this.ctx.createOscillator();
+          const bellGain = this.ctx.createGain();
+          bellOsc.type = 'sine';
+          bellOsc.frequency.setValueAtTime(2093.00, now + 0.15); // C7
+          bellGain.gain.setValueAtTime(0.35, now + 0.15);
+          bellGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+          bellOsc.connect(bellGain);
+          bellGain.connect(this.masterGain);
+          bellOsc.start(now + 0.15);
+          bellOsc.stop(now + 1.25);
+        }
+      } catch (e) {}
+    }
   }
 
   // Universal Module Export
